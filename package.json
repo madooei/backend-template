@@ -1,10 +1,14 @@
 {
   "name": "backend-template",
+  "version": "1.0.0",
+  "description": "A template for a backend service built with TypeScript and Hono.js",
   "type": "module",
+  "author": "Ali Madooei",
+  "license": "MIT",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup src/server.ts --format esm --clean --sourcemap --tsconfig tsconfig.json",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.2",
@@ -12,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "tsup": "^8.5.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }
