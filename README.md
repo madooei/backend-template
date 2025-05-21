@@ -7,6 +7,8 @@ This is a template for a backend service built with TypeScript and Hono.js. It p
 - **Language:** TypeScript
 - **Framework:** Hono.js
 - **Bundler:** Tsup (We use tsx for development, and tsup for production)
+- **Linter:** ESLint
+- **Formatter:** Prettier
 
 ## Local Development
 
