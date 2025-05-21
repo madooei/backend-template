@@ -10,7 +10,14 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
