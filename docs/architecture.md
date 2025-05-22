@@ -8,6 +8,7 @@ The application follows a common layered architecture pattern, consisting of the
 
 1.  **Model Layer (Zod Schemas & TypeScript Types):** Defines the structure, validation, and types for data entities.
 2.  **Data Access Layer (Interfaces and Implementations following the Repository Pattern):** Abstracts the interaction with the data store (e.g., MongoDB).
+3.  **Services Layer:** Contains the core business logic of the application.
 
 ## Layer Details
 
@@ -27,6 +28,15 @@ The application follows a common layered architecture pattern, consisting of the
   - Provide a clean API (interfaces) for CRUD (Create, Read, Update, Delete) operations and other data queries for specific entities.
   - Implementations of these interfaces handle the specific database interactions (e.g., using a MongoDB driver).
   - Ensure that the rest of the application (primarily services) is independent of the chosen database technology. Domain models use simple `id: string`, and repositories handle the mapping to/from database-specific ID formats (like MongoDB's `ObjectId`).
+
+### 3. Services Layer
+
+- **Location:** `src/services/`
+- **Responsibility:**
+  - Implement the core business logic and use cases of the application.
+  - Orchestrate operations by interacting with one or more repositories from the Data Access Layer.
+  - Perform data transformations and complex validations that are beyond simple schema checks.
+  - Decoupled from the specifics of the HTTP layer (controllers) and the database (repositories).
 
 > [!NOTE]
 > More will be added to this document as we implement the layers like Controllers, Services, etc.

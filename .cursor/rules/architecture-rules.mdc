@@ -36,3 +36,21 @@ This codebase follows a layered architecture. When implementing new features or 
     - Perform authorization checks (this belongs in Services).
     - Validate the shape/type of DTOs or domain objects passed *to it* by the Service layer. The repository assumes that data has been validated by higher layers according to business rules.
 - **Key Principle:** Repositories act as data access gateways, isolating database concerns and ensuring data conformity to defined models.
+
+## 3. The Service Layer
+
+- **Location:** `src/services/`
+- **Primary Role:** Encapsulates business logic, orchestrates data operations, and enforces application rules.
+- **Responsibilities:**
+    1. **Business Logic Implementation:** Contains core logic for all use cases and operations (e.g., creating notes, accepting share invites).
+    2. **Fine-Grained Authorization:** Performs permission checks using `UserContext` and resource-specific data. This includes checking ownership and roles (e.g., note author). An `AuthorizationService` centralizes this logic for other services.
+    3. **Business Rule Validation:** Enforces complex validation rules beyond basic data validation (e.g., email uniqueness, verification code expiration, course capacity checks).
+    4. **Data Orchestration & Integrity:** Uses repository interfaces to fetch and persist data. Manages operations requiring multiple data sources (e.g., verifying `userId` and `courseId` before creating a `Membership`).
+    5. **External Service Integration:** Manages external API calls through dedicated client modules (e.g., syncing rosters with Canvas LMS).
+    6. **Transaction Management:** Handles atomic operations across multiple database writes when native database support isn't available.
+    7. **Return Values:** Returns domain objects from `src/schemas/` or business errors that controllers map to HTTP responses.
+- **Service-to-Service Communication:**
+    - Allowed when completing user-initiated operations that require multiple services.
+    - The calling service passes `UserContext` to the called service.
+    - Called services perform task-specific authorization without repeating top-level permission checks.
+- **Key Principle:** Services act as the application's brain, managing business rules, validations, data access, and integrations.
