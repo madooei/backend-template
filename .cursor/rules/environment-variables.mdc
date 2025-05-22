@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+All environment variables must be defined and validated (through Zod) in the `src/env.ts` and imported from this file to other files.
+
+When adding new environment variables, make sure to document them in `.env.example`.

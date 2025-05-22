@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always use path aliases in import statements instead of relative paths. For example, `import { app } from "@/app.ts";`. In this example, `@/*` is mapped to `src/*`. All path aliases for import statements must be defined in both `tsconfig.json` and `tsup.config.ts`
