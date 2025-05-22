@@ -35,7 +35,7 @@ You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https:
 7. Edit the code as needed. The changes will be reflected in the container and on the host machine, thanks to the volume mapping in the `docker-compose.yml` file.
 8. To stop the container, you can either close Visual Studio Code or run `docker-compose down` in the terminal. This will stop and remove the container. All changes to the code are persisted thanks to the volume mapping in the `docker-compose.yml` file.
 
-> [!HINT]
+> [!TIP]
 > To learn more about how I have configured the development container, refer to the [docs/docker.md](docs/docker.md) file.
 
 ### Using Node.js
@@ -54,7 +54,7 @@ You must have [Node.js](https://nodejs.org/en/), [pnpm](https://pnpm.io/), and [
 You can debug the application using the VS Code debugger. To do this, you need to add a breakpoint to the code and run the debugger.
 
 1. Add a breakpoint to the code.
-2. Run the debugger by pressing `F5` in VS Code. (Alternatively, open the Debug panel in VSCode, select "Debug TypeScript Server" from the dropdown, and click the green play button).
+2. Run the debugger by pressing `F5` in VS Code. (Alternatively, open the Debug panel in VSCode, select "Debug Application" from the dropdown, and click the green play button).
 3. The debugger will stop at the breakpoint.
 
 > [!NOTE]
@@ -96,3 +96,21 @@ server {
 ```
 
 This will map the port `3000` (assuming the port is `3000` in the `.env` file) to the port `80` on the production server which is the default port for `nginx`.
+
+## Scripts
+
+We use the `scripts` directory to store scripts that may be useful for the project but are not part of the application. A hello world script is provided as an example (in `scripts/hello-world.ts`).
+
+To run the script, you can use the following commands:
+
+```bash
+npx tsx scripts/hello-world.ts
+npx tsx --watch scripts/hello-world.ts # to run the script and watch for changes
+```
+
+To run a script in debug mode:
+
+- Add a breakpoint to the script.
+- Open the Debug panel in VSCode, select "Debug Script" from the dropdown, and click the green play button.
+
+The scripts have access to the same environment variables and dependencies as the application. If you need to install a dependency for a script, do so as a dev dependency so that it is not installed in the production environment (unless you will be running the script in production).

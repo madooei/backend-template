@@ -61,23 +61,36 @@ You can define a set of debugging configurations in the `.vscode/launch.json` fi
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug TypeScript Server",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        // Node.js internal core modules
-        "<node_internals>/**",
-        // Ignore all dependencies (optional)
-        "${workspaceFolder}/node_modules/**"
-      ],
-      "sourceMaps": true,
-      "smartStep": true
+      "name": "Debug Application"
+      // other configurations...
+    },
+    {
+      "name": "Debug Script"
+      // other configurations...
     }
   ]
+}
+```
+
+### Debugging the Application
+
+```json
+{
+  "name": "Debug Application",
+  "type": "node",
+  "request": "launch",
+  "runtimeExecutable": "pnpm",
+  "runtimeArgs": ["dev"],
+  "console": "integratedTerminal",
+  "internalConsoleOptions": "neverOpen",
+  "skipFiles": [
+    // Node.js internal core modules
+    "<node_internals>/**",
+    // Ignore all dependencies (optional)
+    "${workspaceFolder}/node_modules/**"
+  ],
+  "sourceMaps": true,
+  "smartStep": true
 }
 ```
 
@@ -94,12 +107,45 @@ Let's break down the configuration:
 - `"sourceMaps"`: This property specifies whether the debugger should use JavaScript source maps (`.map` files) during debugging. Source maps are information files that map the generated JavaScript code back to the original TypeScript code. This is helpful when debugging the built code. In our case, it won't make a difference because we are not building the app but it's a good practice to include it.
 - `"smartStep"`: This property specifies whether the debugger should automatically step through generated code that cannot be mapped back to the original source. Similar to the `"sourceMaps"` property, it won't make a difference in our case but it's a good practice to include it.
 
-### How to use the debugger
+#### How to use the Application debugger
 
 With the launch configuration in place, you are now ready to debug your TypeScript application in VSCode:
 
 1. **Set Breakpoints**: Open any of the `.ts` files and set breakpoints by clicking on the left margin of the code lines.
 
-2. **Start Debugging**: Open the Debug panel in VSCode, select "Debug TypeScript Server" from the dropdown, and click the green play button or press `F5` to start debugging.
+2. **Start Debugging**: Open the Debug panel in VSCode, select "Debug Application" from the dropdown, and click the green play button or press `F5` to start debugging.
 
 VSCode will execute your TypeScript server in debug mode, pausing at any breakpoints you've set, allowing you to step through your code, inspect variables, and utilize various debugging tools.
+
+### Debugging TypeScript Scripts
+
+```json
+{
+  "name": "Debug Script",
+  "type": "node",
+  "request": "launch",
+  // Debug current file
+  "program": "${file}",
+  // Path to tsx binary (Assuming locally installed)
+  "runtimeExecutable": "tsx",
+  "runtimeArgs": ["--no-warnings"],
+  "console": "integratedTerminal",
+  "internalConsoleOptions": "neverOpen",
+  "skipFiles": [
+    "<node_internals>/**",
+    "${workspaceFolder}/node_modules/**"
+  ],
+},
+```
+
+Notice the addition of the `"program"` property. Instead of running the `"dev"` script, we are running `tsx` (with the `--no-warnings` flag) to run the program (the current file).
+
+#### How to use the Script debugger
+
+With the launch configuration in place, you are now ready to debug your script in VSCode:
+
+1. **Set Breakpoints**: Open any of the `.ts` files and set breakpoints by clicking on the left margin of the code lines.
+
+2. **Start Debugging**: Open the Debug panel in VSCode, select "Debug Script" from the dropdown, and click the green play button or press `F5` to start debugging.
+
+VSCode will execute your script in debug mode, pausing at any breakpoints you've set, allowing you to step through your code, inspect variables, and utilize various debugging tools.
