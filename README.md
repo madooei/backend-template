@@ -35,7 +35,7 @@ You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https:
 7. Edit the code as needed. The changes will be reflected in the container and on the host machine, thanks to the volume mapping in the `docker-compose.yml` file.
 8. To stop the container, you can either close Visual Studio Code or run `docker-compose down` in the terminal. This will stop and remove the container. All changes to the code are persisted thanks to the volume mapping in the `docker-compose.yml` file.
 
-> [!HINT]
+> [!TIP]
 > To learn more about how I have configured the development container, refer to the [docs/docker.md](docs/docker.md) file.
 
 ### Using Node.js

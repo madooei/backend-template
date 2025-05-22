@@ -62,7 +62,7 @@ docker run -p 3000:3000 backend-template-app
 
 This command runs the Docker container from the `backend-template-app` image and maps port 3000 on the host to port 3000 in the container. This allows us to access the application at `http://localhost:3000`.
 
-> [!HINT]
+> [!TIP]
 > You can have multiple Dockerfiles in the same project. For example, you might have a `Dockerfile.dev` for development and a `Dockerfile.prod` for production. You can specify which Dockerfile to use when building the image using the `-f` flag: `docker build -f Dockerfile.dev -t backend-template-app .`. This way, you can have different configurations for development and production environments. On that point, you can name your Dockerfile whatever you want, but it's a good practice to name it `Dockerfile` for the main one and use a suffix for others, like `Dockerfile.dev` or `Dockerfile.prod`. This way, you can easily identify which Dockerfile is for which environment.
 
 ## `.dockerignore`
@@ -168,7 +168,7 @@ You can use the command `docker compose down` to stop and remove the containers.
 
 You can also use the command `docker compose build` to build the images defined in the `docker-compose.yml` file. This is useful for rebuilding the images after making changes to the Dockerfile or the application code.
 
-> [!HINT]
+> [!TIP]
 > You can have multiple `docker-compose.yml` files in the same project. For example, you might have a `docker-compose.dev.yml` for development and a `docker-compose.prod.yml` for production. You can specify which Docker Compose file to use when running the command using the `-f` flag: `docker-compose -f docker-compose.dev.yml up -d`. This way, you can have different configurations for development and production environments. On that point, you can name your Docker Compose file whatever you want, but it's a good practice to name it `docker-compose.yml` for the main one and use a suffix for others, like `docker-compose.dev.yml` or `docker-compose.prod.yml`. This way, you can easily identify which Docker Compose file is for which environment.
 
 ## `.devcontainer/devcontainer.json`
