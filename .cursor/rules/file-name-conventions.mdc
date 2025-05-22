@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Files should follow this naming pattern to maintain consistency and readability across the project: `entity-name.type.ts`
+
+- **`entity-name`**: The name of the primary entity or feature. For multiple words, use **kebab-case** (e.g., `course-registration`, `user-profile`).
+
+- **`type`**: A suffix showing the file's role. Common types include `controller`, `service`, `repository`, `schema`, `middleware`, etc. Files of the same type should be stored together—for example, all `.schema.ts` files go in the `src/schema/` directory.
+
+For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
