@@ -10,3 +10,20 @@ export const queryParamsSchema = z.object({
 });
 
 export type QueryParams = z.infer<typeof queryParamsSchema>;
+
+export const DEFAULT_PAGE = 1;
+export const DEFAULT_LIMIT = 10;
+
+// Schema for paginated results
+export const paginatedResultsSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    data: z.array(dataSchema),
+    total: z.number().int().nonnegative(),
+    page: z.number().int().positive().default(DEFAULT_PAGE),
+    limit: z.number().int().positive().default(DEFAULT_LIMIT),
+    totalPages: z.number().int().nonnegative(),
+  });
+
+export type PaginatedResult<T> = z.infer<
+  ReturnType<typeof paginatedResultsSchema<z.ZodTypeAny>>
+> & { data: T[] }; // Generic data type

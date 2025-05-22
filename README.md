@@ -2,6 +2,15 @@
 
 This is a template for a backend service built with TypeScript and Hono.js. It provides a basic structure for creating RESTful APIs.
 
+## Architecture
+
+The application follows a common layered architecture pattern, consisting of the following main layers:
+
+1.  **Model Layer (Schemas)**: Defines the structure and validation rules for data entities (e.g., `Note`, `UserContext`), DTOs (Data Transfer Objects), and query parameters.
+2.  **Data Access Layer (Repositories)**: Abstracts the interaction with the data store (e.g., MongoDB).
+3.  **Services Layer**: Contains the core business logic of the application.
+4.  **Controllers Layer**: Handles incoming HTTP requests and outgoing responses.
+
 ## Technology Stack
 
 - **Language:** TypeScript
