@@ -113,4 +113,4 @@ To run a script in debug mode:
 - Add a breakpoint to the script.
 - Open the Debug panel in VSCode, select "Debug Script" from the dropdown, and click the green play button.
 
-The scripts have access to the same environment variables and dependencies as the application. If you need to install a dependency for a script, do so as a dev dependency so that it is not installed in the production environment (unlesss you will be running the script in production).
+The scripts have access to the same environment variables and dependencies as the application. If you need to install a dependency for a script, do so as a dev dependency so that it is not installed in the production environment (unless you will be running the script in production).
