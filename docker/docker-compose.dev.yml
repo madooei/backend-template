@@ -12,7 +12,7 @@ services:
     env_file:
       - .env # relative to this file
     ports:
-      - "${PORT}:${PORT}" # Map port container:host
+      - "${PORT}:${PORT}" # Map port host:container
     environment:
       - NODE_ENV=development
       - PORT=${PORT}

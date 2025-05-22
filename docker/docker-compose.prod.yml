@@ -9,7 +9,7 @@ services:
     env_file:
       - .env.production # relative to this file
     ports:
-      - "${PORT}:${PORT}" # Map port container:host
+      - "${PORT}:${PORT}" # Map port host:container
     environment:
       - NODE_ENV=production
       - PORT=${PORT}

@@ -23,7 +23,7 @@ POSTGRES_PORT=5432
 POSTGRES_DATABASE=postgres-db
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-# 👇 Specifies whether to use secure connection or not (disable since we are conneting through the docker network)
+# 👇 Specifies whether to use secure connection or not (disable since we are connecting through the docker network)
 POSTGRES_SSLMODE=disable
 
 # MongoDB

@@ -99,7 +99,7 @@ services:
       - .:/app:delegated
       - /app/node_modules
     ports:
-      - "3000:3000" # Map port container:host
+      - "3000:3000"
     environment:
       - NODE_ENV=development
     command: /bin/sh -c "sleep infinity" 
@@ -129,10 +129,10 @@ Here's a breakdown of the `docker-compose.yml` file:
     - Notice the folder name `/app` is the same as the working directory we set in the Dockerfile. This is important for consistency and to avoid confusion.
   - The second volume mounts an empty directory for `node_modules`, ensuring that the host's `node_modules` directory is not used in the container. This is important because the dependencies are installed inside the container, and we don't want to mix them with the host's dependencies.
 
-- `ports`: This section maps the container's port to the host's port. Let's say we run our application on port 3000 in the container, we can map it to port 3000 on the host. This allows us to access the application from the host machine using `http://localhost:3000`. We can adjust the port mapping as needed, for example, if we want to run multiple instances of the application on different ports.
+- `ports`: This section maps the host's port to the container's port. Let's say we run our application on port 3000 in the container, we can map it to port 3000 on the host. This allows us to access the application from the host machine using `http://localhost:3000`.
   - It is common we use the same port for both the container and the host, but we can change it if needed. For example, if we want to run the application on port 4000 on the host, we can change this line to `- "4000:3000"`. This way, we can access the application at `http://localhost:4000` while it still runs on port 3000 inside the container.
   - The format for the port mapping is `host_port:container_port`. This means that the host's port will be mapped to the container's port.
-  - I recommend using the same port for both the host and the container; the way I set it up with VS Code makes it easier to access the application.
+  - I recommend using the same port for both the host and the container; the way I set it up with VS Code devcontainer makes it easier to access the application at the same port on the host and the container.
   - Note that services running inside the container can access each other using the service name as the hostname. For example, another service in the same Docker Compose file can access this service using `http://app:3000`. This is because Docker Compose creates a default network for the services, allowing them to communicate with each other using their service names as hostnames.
 
 - `environment`: This section defines environment variables to set in the container. In this case, we set `NODE_ENV` to `development`, which is a common practice for Node.js applications.
@@ -310,7 +310,7 @@ services:
     env_file:
       - .env.production # relative to this file
     ports:
-      - "${PORT}:${PORT}" # Map port container:host
+      - "${PORT}:${PORT}" # Map port host:container
     environment:
       - NODE_ENV=production
       - PORT=${PORT}
@@ -363,7 +363,7 @@ services:
     env_file:
       - .env # relative to this file
     ports:
-      - "${PORT}:${PORT}" # Map port container:host
+      - "${PORT}:${PORT}" # Map port host:container
     environment:
       - NODE_ENV=development
       - PORT=${PORT}
