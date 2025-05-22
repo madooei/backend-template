@@ -35,6 +35,9 @@ You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https:
 7. Edit the code as needed. The changes will be reflected in the container and on the host machine, thanks to the volume mapping in the `docker-compose.yml` file.
 8. To stop the container, you can either close Visual Studio Code or run `docker-compose down` in the terminal. This will stop and remove the container. All changes to the code are persisted thanks to the volume mapping in the `docker-compose.yml` file.
 
+> [!HINT]
+> To learn more about how I have configured the development container, refer to the [docs/docker.md](docs/docker.md) file.
+
 ### Using Node.js
 
 You must have [Node.js](https://nodejs.org/en/), [pnpm](https://pnpm.io/), and [git](https://git-scm.com/) installed on your machine.
@@ -45,6 +48,17 @@ You must have [Node.js](https://nodejs.org/en/), [pnpm](https://pnpm.io/), and [
 4. Run the development server: `pnpm dev`. The API will be available at `http://localhost:{PORT}` (as defined in your `.env` file).
 5. Edit the code as needed. The changes will be reflected immediately thanks to the `--watch` flag in the `tsx` command.
 6. You can stop the development server by pressing `ctrl + c` in the terminal.
+
+### Debugging
+
+You can debug the application using the VS Code debugger. To do this, you need to add a breakpoint to the code and run the debugger.
+
+1. Add a breakpoint to the code.
+2. Run the debugger by pressing `F5` in VS Code. (Alternatively, open the Debug panel in VSCode, select "Debug TypeScript Server" from the dropdown, and click the green play button).
+3. The debugger will stop at the breakpoint.
+
+> [!NOTE]
+> To learn more about how I have configured the VS Code debugger, refer to the [docs/vscode.md](docs/vscode.md) file.
 
 ## Production Build
 

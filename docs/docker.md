@@ -10,7 +10,7 @@ In the root of the project, you will find a text file named `Dockerfile`. This f
 # Dockerfile
 FROM node:24-bullseye-slim
 RUN npm install -g pnpm
-WORKDIR /app 
+WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install
 COPY . .
@@ -22,7 +22,7 @@ CMD ["pnpm", "run", "dev"]
 
 Here's a breakdown of the Dockerfile:
 
-- `FROM node:24-bullseye-slim`: This line specifies the base *image* to use. In this case, it's a slim version of Node.js 24 on Debian Bullseye. Think of this as an operating system with Node.js pre-installed.
+- `FROM node:24-bullseye-slim`: This line specifies the base _image_ to use. In this case, it's a slim version of Node.js 24 on Debian Bullseye. Think of this as an operating system with Node.js pre-installed.
 
 - `RUN npm install -g pnpm`: This line installs the `pnpm` package manager globally in the container. This is necessary because the application uses `pnpm` to manage its dependencies.
 
@@ -33,6 +33,7 @@ Here's a breakdown of the Dockerfile:
 - `RUN pnpm install`: This line installs the application dependencies inside the container using `pnpm`.
 
 - `COPY . .`: This line copies the entire application code from the host machine to the container. The first `.` refers to the current directory on the host, and the second `.` refers to the current directory in the container (which is `/app`).
+
   - This copying step ignores files and directories specified in the `.dockerignore` file, which is similar to `.gitignore`. This is important to avoid copying unnecessary files into the container, which can increase its size and slow down the build process.
   - Why do we separately copy the `package.json` and `pnpm-lock.yaml` files? We do this to take advantage of Docker's caching mechanism. By copying these files first and running `pnpm install`, we can cache the installed dependencies. If we only copy the application code and run `pnpm install`, Docker would have to reinstall all dependencies every time we make a change to the code, even if the dependencies haven't changed.
 
@@ -87,7 +88,7 @@ docker-compose.yml
 In the root of the project, you will also find a file named `docker-compose.yml`. This file is used to define and run multi-container Docker applications. In this case, we are using it to define a single container for our application.
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -102,7 +103,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-    command: /bin/sh -c "sleep infinity" 
+    command: /bin/sh -c "sleep infinity"
     restart: unless-stopped
     user: node
     networks:
@@ -122,23 +123,28 @@ Here's a breakdown of the `docker-compose.yml` file:
 - `container_name: backend-template-app`: This line specifies the name of the container. If we don't specify a name, Docker will generate a random name for the container.
 
 - `build`: This section specifies how to build the Docker image for the service. The `context` is the directory where the Dockerfile is located, and the `dockerfile` is the name of the Dockerfile.
+
   - If we were to run another service like a database, we would not need to build it, as we would use an existing image from Docker Hub. In that case, we would specify the image name instead of the build context.
 
 - `volumes`: This section defines the volumes to mount in the container. Think of volumes like shared folders between the host and the container. They allow us to persist data and share files between the host and the container.
+
   - The first volume mounts the current directory on the host (`.`) to `/app` in the container. The `:delegated` option tells Docker to prioritize the container's view of the volume over the host's view, which can improve performance in some cases.
     - Notice the folder name `/app` is the same as the working directory we set in the Dockerfile. This is important for consistency and to avoid confusion.
   - The second volume mounts an empty directory for `node_modules`, ensuring that the host's `node_modules` directory is not used in the container. This is important because the dependencies are installed inside the container, and we don't want to mix them with the host's dependencies.
 
 - `ports`: This section maps the host's port to the container's port. Let's say we run our application on port 3000 in the container, we can map it to port 3000 on the host. This allows us to access the application from the host machine using `http://localhost:3000`.
+
   - It is common we use the same port for both the container and the host, but we can change it if needed. For example, if we want to run the application on port 4000 on the host, we can change this line to `- "4000:3000"`. This way, we can access the application at `http://localhost:4000` while it still runs on port 3000 inside the container.
   - The format for the port mapping is `host_port:container_port`. This means that the host's port will be mapped to the container's port.
   - I recommend using the same port for both the host and the container; the way I set it up with VS Code devcontainer makes it easier to access the application at the same port on the host and the container.
   - Note that services running inside the container can access each other using the service name as the hostname. For example, another service in the same Docker Compose file can access this service using `http://app:3000`. This is because Docker Compose creates a default network for the services, allowing them to communicate with each other using their service names as hostnames.
 
 - `environment`: This section defines environment variables to set in the container. In this case, we set `NODE_ENV` to `development`, which is a common practice for Node.js applications.
+
   - Another common practice is to set environment variables as `NODE_ENV=${NODE_ENV}`. This way, we can set the environment variable on the host and it will be passed to the container. This is useful for different environments like development, staging, and production. In this case, you can set the `NODE_ENV` variable in the `.env` file and it will be automatically loaded by Docker Compose. If your `.env` file is named something else, you can specify it in the `docker-compose.yml` file like this: `docker-compose up --env-file .env-name`.
 
 - `command: /bin/sh -c "sleep infinity"`: This line specifies the command to run when the container starts. In this case, it runs a shell command that sleeps indefinitely. This is useful for keeping the container running without doing anything. It fits well with how we use the container through VS Code. It is expected that we open the terminal in VS Code and run the application from there.
+
   - In production, we would replace this with the command to start the application, such as `pnpm run start`.
   - In test mode, we can use `command: /bin/sh -c "pnpm test"` to run the tests inside the container. This is useful for running tests in a consistent environment.
 
@@ -183,7 +189,7 @@ In the `.devcontainer` directory, you will find a file named `devcontainer.json`
         "dbaeumer.vscode-eslint",
         "ms-vscode.js-debug-nightly",
         "esbenp.prettier-vscode",
-        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.vscode-typescript-next"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -204,11 +210,13 @@ Here's a breakdown of the `devcontainer.json` file:
 - `dockerComposeFile`: This line specifies the path to the Docker Compose file. In this case, it points to the `docker-compose.yml` file in the root of the project.
 
 - `service`: This line specifies the name of the service to use as the development container. In this case, it uses the `app` service defined in the Docker Compose file.
+
   - This means that when we open the project in Visual Studio Code, it will automatically start the `app` service defined in the Docker Compose file and attach to it.
 
 - `workspaceFolder`: This line specifies the path to the workspace folder inside the container. In this case, it points to `/app`, which is the working directory defined in the Dockerfile.
 
 - `forwardPorts`: This line specifies the ports to forward from the container to the host. In this case, it forwards port 3000, which is the port the application listens on.
+
   - Because our `docker-compose.yml` already handles this mapping, explicitly listing 3000 in forwardPorts in devcontainer.json is not strictly necessary for the port to be accessible on your host. You could reach the app at `http://localhost:3000` regardless.
   - However, we'll keep 3000 (or the relevant port) in forwardPorts because it provides a clear signal to VS Code that this port is important for your development workflow within the container. VS Code can then automatically manage this port, display it in the "Ports" tab, and potentially offer conveniences like automatically opening your application in a browser.
   - Note if we have multiple services in the `docker-compose.yml` file, we can specify multiple ports in the `forwardPorts` array. For example, if we have a database service running on port 5432, we can add it like this: `"forwardPorts": [3000, 5432]`.
@@ -216,11 +224,13 @@ Here's a breakdown of the `devcontainer.json` file:
 - `shutdownAction`: This line specifies the action to take when the development container is stopped. In this case, it tells Visual Studio Code to stop the Docker Compose services when the container is shut down.
 
 - `customizations`: This section allows us to customize the development container. In this case, we specify custom settings for Visual Studio Code.
+
   - `vscode`: This section contains settings specific to Visual Studio Code.
     - `extensions`: This array lists the extensions to install in the development container. In this case, we install ESLint, Prettier, and TypeScript extensions.
     - `settings`: This section contains custom settings for Visual Studio Code. In this case, we enable format on save and set Prettier as the default formatter.
 
 - `postCreateCommand`: This line specifies the command to run after the container is created. In this case, it runs `pnpm install` to install the application dependencies inside the container.
+
   - This is useful for ensuring that the dependencies are installed in the container, especially if we add new dependencies to the project.
   - This might seem redundant since we already run `pnpm install` in the Dockerfile, but that is not the case. As you develop the application, you might add new dependencies to the `package.json` file. The `postCreateCommand` ensures that these new dependencies are installed in the container, which might have changed since the container image was last built.
 
@@ -278,7 +288,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml* ./
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules 
+COPY --from=builder /app/node_modules ./node_modules
 EXPOSE 3000
 CMD ["npm", "run", "start"]
 ```
@@ -326,7 +336,7 @@ services:
       # - REDIS_HOST=${REDIS_HOST}
       # - REDIS_PORT=${REDIS_PORT}
       # - REDIS_PASSWORD=${REDIS_PASSWORD}
-    command: /bin/sh -c "npm run start" 
+    command: /bin/sh -c "npm run start"
     user: node
     restart: unless-stopped
     networks:
@@ -386,7 +396,7 @@ services:
         condition: service_healthy
       redis_cache:
         condition: service_healthy
-    command: /bin/sh -c "npm run start" 
+    command: /bin/sh -c "npm run start"
     user: node
     restart: unless-stopped
     networks:
@@ -397,7 +407,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}" 
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     user: "${POSTGRES_USER}"
     volumes:
       - pgdata:/var/lib/postgresql/data # Where Postgres stores its data by default
@@ -469,7 +479,6 @@ volumes:
   pgdata:
   mongodb_data:
   redis_data:
-
 ```
 
 Notice we defined three other services: `postgres_db`, `mongo_db`, and `redis_cache`. For each of these services, we defined a volume to store its data. This is useful for persisting data across container restarts. Moreover, we defined a healthcheck for each service to ensure that it is running properly. It is important that the services are running before the application starts.
