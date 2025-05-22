@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: backend-template-app
+    build:
+      context: ../ # relative to this file
+      dockerfile: docker/Dockerfile.prod # relative to the build context
+    env_file:
+      - .env.production # relative to this file
+    ports:
+      - "${PORT}:${PORT}" # Map port host:container
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT}
+      # - POSTGRES_HOST=${POSTGRES_HOST}
+      # - POSTGRES_USER=${POSTGRES_USER}
+      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      # - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      # - MONGODB_HOST=${MONGODB_HOST}
+      # - MONGODB_PORT=${MONGODB_PORT}
+      # - MONGODB_DATABASE=${MONGODB_DATABASE}
+      # - MONGODB_USER=${MONGODB_USER}
+      # - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      # - REDIS_HOST=${REDIS_HOST}
+      # - REDIS_PORT=${REDIS_PORT}
+      # - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: /bin/sh -c "npm run start" 
+    user: node
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
