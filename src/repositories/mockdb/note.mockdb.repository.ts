@@ -31,13 +31,13 @@ export class MockDbNoteRepository implements INoteRepository {
     const page = params.page ?? DEFAULT_PAGE;
     const limit = params.limit ?? DEFAULT_LIMIT;
     const skip = (page - 1) * limit;
-    const paginatedNotes = filteredNotes.slice(skip, skip + limit);
+    let paginatedNotes = filteredNotes.slice(skip, skip + limit);
     const totalPages = Math.ceil(filteredNotes.length / limit);
 
     const sortBy = (params.sortBy ?? "createdAt") as keyof Note;
     const sortOrder = params.sortOrder;
     if (sortBy) {
-      filteredNotes = filteredNotes.sort((a, b) => {
+      paginatedNotes = paginatedNotes.sort((a, b) => {
         if (sortOrder === "asc") {
           return (
             a[sortBy]?.toString().localeCompare(b[sortBy]?.toString() ?? "") ??

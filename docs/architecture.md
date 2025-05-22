@@ -1,6 +1,6 @@
 # Application Architecture
 
-This document outlines the layered architecture of the this application. The architecture is designed to promote separation of concerns, maintainability, and testability.
+This document outlines the layered architecture of this application. The architecture is designed to promote separation of concerns, maintainability, and testability.
 
 ## Layers Overview
 
