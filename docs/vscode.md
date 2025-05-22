@@ -13,24 +13,24 @@ You can define your editor settings in the `.vscode/settings.json` file. These w
 
 ```json
 {
-    "workbench.preferredDarkColorTheme": "Default Dark+", // Set the default dark theme
-    "workbench.preferredLightColorTheme": "Visual Studio Dark", // Set the default light theme
-    "workbench.colorTheme": "Default Light+", // Set the default theme
-    "window.autoDetectColorScheme": true, // Automatically detect the color scheme
-    "window.zoomLevel": 0, // Set the default zoom level
-    "editor.fontSize": 18, // Set the default font size
-    "editor.lineHeight": 1.8, // Set the default line height
-    "editor.fontFamily": "MonoLisa", // Set the default font family
-    "terminal.integrated.fontSize": 18, // Set the default terminal font size
-    "terminal.integrated.lineHeight": 1.8, // Set the default terminal line height
-    "terminal.integrated.fontFamily": "MonoLisa", // Set the default terminal font family
-    "editor.minimap.enabled": false, // Disable the minimap
-    "editor.tabSize": 2, // Set the default tab size
-    "editor.wordWrap": "off", // Enable word wrap
-    "editor.mouseWheelZoom": true, // Enable mouse wheel zoom
-    "editor.formatOnSave": true, // Format the code on save
-    "editor.defaultFormatter": "esbenp.prettier-vscode", // Set the default formatter
-    "typescript.tsdk": "node_modules/typescript/lib" // Set the TypeScript SDK
+  "workbench.preferredDarkColorTheme": "Default Dark+", // Set the default dark theme
+  "workbench.preferredLightColorTheme": "Visual Studio Dark", // Set the default light theme
+  "workbench.colorTheme": "Default Light+", // Set the default theme
+  "window.autoDetectColorScheme": true, // Automatically detect the color scheme
+  "window.zoomLevel": 0, // Set the default zoom level
+  "editor.fontSize": 18, // Set the default font size
+  "editor.lineHeight": 1.8, // Set the default line height
+  "editor.fontFamily": "MonoLisa", // Set the default font family
+  "terminal.integrated.fontSize": 18, // Set the default terminal font size
+  "terminal.integrated.lineHeight": 1.8, // Set the default terminal line height
+  "terminal.integrated.fontFamily": "MonoLisa", // Set the default terminal font family
+  "editor.minimap.enabled": false, // Disable the minimap
+  "editor.tabSize": 2, // Set the default tab size
+  "editor.wordWrap": "off", // Enable word wrap
+  "editor.mouseWheelZoom": true, // Enable mouse wheel zoom
+  "editor.formatOnSave": true, // Format the code on save
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // Set the default formatter
+  "typescript.tsdk": "node_modules/typescript/lib" // Set the TypeScript SDK
 }
 ```
 
@@ -45,7 +45,7 @@ You can define a set of recommended extensions in the `.vscode/extensions.json` 
     "ms-vscode.js-debug-nightly",
     "esbenp.prettier-vscode",
     "ms-vscode.vscode-typescript-next",
-    "ms-vscode-remote.vscode-remote-extensionpack",
+    "ms-vscode-remote.vscode-remote-extensionpack"
   ]
 }
 ```
