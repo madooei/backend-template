@@ -12,6 +12,16 @@ This is a template for a backend service built with TypeScript and Hono.js. It p
 
 ## Local Development
 
+### Setting up the environment variables
+
+You must have a `.env` file in the root of the project. If you don't have one, you can create one by copying the `.env.example` file.
+
+```bash
+cp .env.example .env
+```
+
+Adjust the environment variables as needed.
+
 ### Using Docker (Recommended)
 
 You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https://code.visualstudio.com/) installed on your machine. You also need to have the ["Remote - Containers" extension pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed in Visual Studio Code.
@@ -21,7 +31,7 @@ You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https:
 3. If you have the Remote - Containers extension installed, Visual Studio Code will automatically detect the `.vscode/devcontainer.json` file and prompt you to reopen the project in a container. I like to say "no" to this prompt, as I prefer to open the container manually.
 4. To open the project in a container, press `command + shift + p` (or `ctrl + shift + p` on Windows) to open the command palette.
 5. Type "Dev Containers: Rebuild and Reopen in Container" and select it. This will start the Docker container defined in the `docker-compose.yml` file and attach Visual Studio Code to it.
-6. Once the container is running, you can open a terminal in Visual Studio Code and run the application using `pnpm run dev`. The application will be available at `http://localhost:3000`. Since the VS Code terminal is running inside the container, you can run any command as if you were inside the container. For example, you can run `pnpm test` to run the tests.
+6. Once the container is running, you can open a terminal in Visual Studio Code and run the application using `pnpm run dev`. The application will be available at `http://localhost:${env.PORT}`. Since the VS Code terminal is running inside the container, you can run any command as if you were inside the container. For example, you can run `pnpm test` to run the tests.
 7. Edit the code as needed. The changes will be reflected in the container and on the host machine, thanks to the volume mapping in the `docker-compose.yml` file.
 8. To stop the container, you can either close Visual Studio Code or run `docker-compose down` in the terminal. This will stop and remove the container. All changes to the code are persisted thanks to the volume mapping in the `docker-compose.yml` file.
 
@@ -32,7 +42,7 @@ You must have [Node.js](https://nodejs.org/en/), [pnpm](https://pnpm.io/), and [
 1. Clone the repository.
 2. Navigate to the project directory.
 3. Install the dependencies: `pnpm install`
-4. Run the development server: `pnpm dev`. The API will be available at `http://localhost:3000`.
+4. Run the development server: `pnpm dev`. The API will be available at `http://localhost:${env.PORT}`.
 5. Edit the code as needed. The changes will be reflected immediately thanks to the `--watch` flag in the `tsx` command.
 6. You can stop the development server by pressing `ctrl + c` in the terminal.
 
@@ -55,7 +65,7 @@ You must have [Node.js](https://nodejs.org/en/), [pnpm](https://pnpm.io/), and [
 6. Build the project: `pnpm build`. This will create a `dist` directory with the compiled code.
 7. Start the production server: `pnpm start`
 
-This will start the server using the compiled code in the `dist` directory. The API will be available at `http://localhost:3000`.
+This will start the server using the compiled code in the `dist` directory. The API will be available at `http://localhost:${env.PORT}`.
 
 ### Mapping the Port
 
@@ -71,4 +81,4 @@ server {
 }
 ```
 
-This will map the port `3000` to the port `80` on the production server which is the default port for `nginx`.
+This will map the port `3000` (assuming the port is `3000` in the `.env` file) to the port `80` on the production server which is the default port for `nginx`.
