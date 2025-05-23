@@ -1,8 +1,12 @@
 import { z } from "zod";
 import { globalRoleSchema } from "@/schemas/roles.schemas.ts";
 
+export const userIdSchema = z.string();
+
+export type UserIdType = z.infer<typeof userIdSchema>;
+
 export const authenticatedUserContextSchema = z.object({
-  userId: z.string(),
+  userId: userIdSchema,
   globalRole: globalRoleSchema,
 });
 
