@@ -38,7 +38,7 @@ Adjust the environment variables as needed.
 This template assumes an external User Authentication Service (`auth-service`) for user verification and information retrieval rather than implementing authentication directly. For development purposes, a minimal mock authentication service is provided. Start it using this command:
 
 ```bash
-npx tsx scripts/mock-auth-service.ts
+npx tsx scripts/mock-auth-server.ts
 ```
 
 The mock service will run at `http://localhost:3333`. Set this URL as your `AUTH_SERVICE_URL` environment variable in the `.env` file.

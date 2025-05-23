@@ -1,7 +1,7 @@
 {
-  "workbench.preferredDarkColorTheme": "Visual Studio Light", // Set the default dark theme
-  "workbench.preferredLightColorTheme": "Visual Studio Dark", // Set the default light theme
-  "workbench.colorTheme": "Default Light+", // Set the default theme
+  "workbench.preferredDarkColorTheme": "Visual Studio Dark", // Set the default dark theme
+  "workbench.preferredLightColorTheme": "Visual Studio Light", // Set the default light theme
+  "workbench.colorTheme": "Visual Studio Dark", // Set the default theme
   "window.autoDetectColorScheme": true, // Automatically detect the color scheme
   "window.zoomLevel": 0, // Set the default zoom level
   "editor.fontSize": 18, // Set the default font size
