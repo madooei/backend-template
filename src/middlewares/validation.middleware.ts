@@ -94,8 +94,12 @@ export const validate = (
     const result = schema.safeParse(dataToValidate);
 
     if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+      const fieldErrorMessages = Object.entries(fieldErrors)
+        .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+        .join("; ");
       throw new HTTPException(400, {
-        message: `Validation failed for ${source}.`,
+        message: `Validation failed for ${source}. ${fieldErrorMessages}`,
         cause: result.error.flatten(),
       });
     }
