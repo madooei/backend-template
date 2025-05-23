@@ -9,6 +9,7 @@ The application follows a common layered architecture pattern, consisting of the
 1.  **Model Layer (Zod Schemas & TypeScript Types):** Defines the structure, validation, and types for data entities.
 2.  **Data Access Layer (Interfaces and Implementations following the Repository Pattern):** Abstracts the interaction with the data store (e.g., MongoDB).
 3.  **Services Layer:** Contains the core business logic of the application.
+4.  **Controllers Layer:** Handles incoming HTTP requests and outgoing responses.
 
 ## Layer Details
 
@@ -38,7 +39,15 @@ The application follows a common layered architecture pattern, consisting of the
   - Perform data transformations and complex validations that are beyond simple schema checks.
   - Decoupled from the specifics of the HTTP layer (controllers) and the database (repositories).
 
-> [!NOTE]
-> More will be added to this document as we implement the layers like Controllers, Services, etc.
+### 4. Controllers Layer
+
+- **Location:** `src/controllers/`
+- **Responsibility:**
+  - Receive HTTP requests from clients.
+  - Parse request parameters, body, and headers.
+  - Perform initial input validation (leveraging Zod schemas).
+  - Call appropriate methods in the Services Layer to perform business operations.
+  - Format and send HTTP responses (data, status codes, error messages).
+- **Framework:** Hono.js is used for routing and request/response handling.
 
 This layered approach ensures that each part of the application has a distinct responsibility, making the system easier to develop, test, debug, and maintain. Changes in one layer (e.g., switching the database) should ideally have minimal impact on other layers, provided the interfaces between them are respected.
