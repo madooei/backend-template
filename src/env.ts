@@ -8,12 +8,14 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.string().default("development"),
   PORT: z.coerce.number().default(3000),
+  AUTH_SERVICE_URL: z.string().url().optional(),
 });
 
 // Create an object to allow (potentially) mapping environment variables with different names
 const mappedEnv = {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
+  AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL,
 };
 
 const _env = envSchema.safeParse(mappedEnv);

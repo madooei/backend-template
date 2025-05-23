@@ -2,23 +2,32 @@ import { Hono } from "hono";
 import type { NoteController } from "@/controllers/note-controller.ts";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
 import { validate } from "@/middlewares/validation.middleware.ts";
+import { entityIdParamSchema } from "@/schemas/shared.schema.ts";
 import {
-  entityIdParamSchema,
-  queryParamsSchema,
-} from "@/schemas/shared.schema.ts";
-import { createNoteSchema } from "@/schemas/note.schema.ts";
+  createNoteSchema,
+  noteQueryParamsSchema,
+} from "@/schemas/note.schema.ts";
+import {
+  authMiddleware,
+  ensureAuthenticated,
+} from "@/middlewares/auth.middleware.ts";
 
 export const createNoteRoutes = (noteController: NoteController) => {
   const noteRoutes = new Hono<AppEnv>();
 
+  // Authentication middleware
+  noteRoutes.use("*", authMiddleware);
+  // Guard against unauthenticated users
+  noteRoutes.use("*", ensureAuthenticated);
+
   noteRoutes.get(
     "/",
     validate({
-      schema: queryParamsSchema,
+      schema: noteQueryParamsSchema,
       source: "query",
       varKey: "validatedQuery",
     }),
-    noteController.getAll,
+    noteController.getAll
   );
 
   noteRoutes.get(
@@ -28,7 +37,7 @@ export const createNoteRoutes = (noteController: NoteController) => {
       source: "params",
       varKey: "validatedParams",
     }),
-    noteController.getById,
+    noteController.getById
   );
 
   noteRoutes.post(
@@ -38,7 +47,7 @@ export const createNoteRoutes = (noteController: NoteController) => {
       source: "body",
       varKey: "validatedBody",
     }),
-    noteController.create,
+    noteController.create
   );
 
   noteRoutes.put(
@@ -53,7 +62,7 @@ export const createNoteRoutes = (noteController: NoteController) => {
       source: "body",
       varKey: "validatedBody",
     }),
-    noteController.update,
+    noteController.update
   );
 
   noteRoutes.delete(
@@ -63,7 +72,7 @@ export const createNoteRoutes = (noteController: NoteController) => {
       source: "params",
       varKey: "validatedParams",
     }),
-    noteController.delete,
+    noteController.delete
   );
 
   return noteRoutes;
