@@ -4,6 +4,7 @@ import type {
   CreateNoteType,
   UpdateNoteType,
   NoteQueryParamsType,
+  NoteIdType,
 } from "@/schemas/note.schema.ts";
 import {
   DEFAULT_LIMIT,
@@ -11,6 +12,7 @@ import {
   type PaginatedResultType,
 } from "@/schemas/shared.schema.ts";
 import type { INoteRepository } from "@/repositories/note.repository.ts";
+import type { UserIdType } from "@/schemas/user.schemas.ts";
 
 export class MockDbNoteRepository implements INoteRepository {
   private notes: NoteType[] = [];
@@ -81,17 +83,16 @@ export class MockDbNoteRepository implements INoteRepository {
   }
 
   async findAllByIds(
-    ids: string[],
+    ids: NoteIdType[],
     params: NoteQueryParamsType
   ): Promise<PaginatedResultType<NoteType>> {
     const filteredNotes = this.notes.filter((note) => ids.includes(note.id));
-
     return this.applyQueryParams(filteredNotes, params);
   }
 
   async create(
     data: CreateNoteType,
-    createdByUserId: string
+    createdByUserId: UserIdType
   ): Promise<NoteType> {
     const now = new Date();
     const newNote: NoteType = {
@@ -105,7 +106,7 @@ export class MockDbNoteRepository implements INoteRepository {
     return newNote;
   }
 
-  async update(id: string, data: UpdateNoteType): Promise<NoteType | null> {
+  async update(id: NoteIdType, data: UpdateNoteType): Promise<NoteType | null> {
     const noteIndex = this.notes.findIndex((n) => n.id === id);
     if (noteIndex === -1) {
       return null;
@@ -120,7 +121,7 @@ export class MockDbNoteRepository implements INoteRepository {
     return updatedNote;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: NoteIdType): Promise<boolean> {
     const initialLength = this.notes.length;
     this.notes = this.notes.filter((n) => n.id !== id);
     return this.notes.length < initialLength;
