@@ -52,7 +52,7 @@ interface ValidationOptions {
  * ```
  */
 export const validate = (
-  options: ValidationOptions
+  options: ValidationOptions,
 ): MiddlewareHandler<AppEnv> => {
   const { schema, source, varKey } = options;
 
