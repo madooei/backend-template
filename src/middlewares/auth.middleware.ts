@@ -1,8 +1,14 @@
 import { createMiddleware } from "hono/factory";
-import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
 import { AuthenticationService } from "@/services/authentication.service.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import {
+  UnauthenticatedError,
+  UnauthenticatedHTTPException,
+} from "@/errors/unauthenticated.error.ts";
+import { ServiceUnavailableHTTPException } from "@/errors/service-unavailable.error.ts";
+import { ServiceUnavailableError } from "@/errors/service-unavailable.error.ts";
+import { InternalServerHTTPException } from "@/errors/internal-server.error.ts";
 
 const authenticationService = new AuthenticationService();
 
@@ -10,7 +16,7 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
 
   if (!authHeader) {
-    throw new HTTPException(401, {
+    throw new UnauthenticatedHTTPException({
       message: "Authentication required. Bearer token must be provided.",
     });
   }
@@ -23,7 +29,7 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   }
 
   if (!token) {
-    throw new HTTPException(400, {
+    throw new UnauthenticatedHTTPException({
       message: "Invalid Authorization header format. Expected Bearer token.",
     });
   }
@@ -33,32 +39,27 @@ export const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   try {
     user = await authenticationService.authenticateUserByToken(token);
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith("Invalid token")) {
-      throw new HTTPException(401, {
-        message: "Invalid token or insufficient permissions.",
+    if (error instanceof UnauthenticatedError) {
+      throw new UnauthenticatedHTTPException({
+        message: error.message,
+      });
+    } else if (error instanceof ServiceUnavailableError) {
+      throw new ServiceUnavailableHTTPException({
+        message: error.message,
+      });
+    } else {
+      throw new InternalServerHTTPException({
+        message: "Could not connect to user authentication service.",
       });
     }
-    throw new HTTPException(503, {
-      message: "Could not connect to user authentication service.",
-    });
   }
 
   if (!user) {
-    throw new HTTPException(401, {
+    throw new UnauthenticatedHTTPException({
       message: "Authentication failed: user not found or invalid token.",
     });
   }
 
   c.set("user", user);
-  await next();
-});
-
-// Helper middleware to ensure a user is authenticated
-// Can be applied to routes that strictly require an authenticated user
-export const ensureAuthenticated = createMiddleware<AppEnv>(async (c, next) => {
-  const user = c.get("user");
-  if (!user) {
-    throw new HTTPException(401, { message: "Authentication required." });
-  }
   await next();
 });
