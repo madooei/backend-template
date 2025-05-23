@@ -7,18 +7,13 @@ import {
   createNoteSchema,
   noteQueryParamsSchema,
 } from "@/schemas/note.schema.ts";
-import {
-  authMiddleware,
-  ensureAuthenticated,
-} from "@/middlewares/auth.middleware.ts";
+import { authMiddleware } from "@/middlewares/auth.middleware.ts";
 
 export const createNoteRoutes = (noteController: NoteController) => {
   const noteRoutes = new Hono<AppEnv>();
 
   // Authentication middleware
   noteRoutes.use("*", authMiddleware);
-  // Guard against unauthenticated users
-  noteRoutes.use("*", ensureAuthenticated);
 
   noteRoutes.get(
     "/",
