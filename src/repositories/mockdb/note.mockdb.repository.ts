@@ -1,24 +1,24 @@
 import { v4 as uuidv4 } from "uuid";
 import type {
-  Note,
-  CreateNoteDto,
-  UpdateNoteDto,
+  NoteType,
+  CreateNoteType,
+  UpdateNoteType,
 } from "@/schemas/note.schema.ts";
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
-  type PaginatedResult,
-  type QueryParams,
+  type PaginatedResultType,
+  type QueryParamsType,
 } from "@/schemas/shared.schema.ts";
 import type { INoteRepository } from "@/repositories/note.repository.ts";
 
 export class MockDbNoteRepository implements INoteRepository {
-  private notes: Note[] = [];
+  private notes: NoteType[] = [];
 
   private applyQueryParams(
-    notes: Note[],
-    params: QueryParams,
-  ): PaginatedResult<Note> {
+    notes: NoteType[],
+    params: QueryParamsType,
+  ): PaginatedResultType<NoteType> {
     let filteredNotes = notes;
 
     const searchTerm = params.search?.toLowerCase().trim();
@@ -34,7 +34,7 @@ export class MockDbNoteRepository implements INoteRepository {
     let paginatedNotes = filteredNotes.slice(skip, skip + limit);
     const totalPages = Math.ceil(filteredNotes.length / limit);
 
-    const sortBy = (params.sortBy ?? "createdAt") as keyof Note;
+    const sortBy = (params.sortBy ?? "createdAt") as keyof NoteType;
     const sortOrder = params.sortOrder;
     if (sortBy) {
       paginatedNotes = paginatedNotes.sort((a, b) => {
@@ -62,27 +62,29 @@ export class MockDbNoteRepository implements INoteRepository {
     };
   }
 
-  async findAll(params: QueryParams): Promise<PaginatedResult<Note>> {
+  async findAll(
+    params: QueryParamsType,
+  ): Promise<PaginatedResultType<NoteType>> {
     return this.applyQueryParams(this.notes, params);
   }
 
-  async findById(id: string): Promise<Note | null> {
+  async findById(id: string): Promise<NoteType | null> {
     const note = this.notes.find((n) => n.id === id);
     return note || null;
   }
 
   async findAllByIds(
     ids: string[],
-    params: QueryParams,
-  ): Promise<PaginatedResult<Note>> {
+    params: QueryParamsType,
+  ): Promise<PaginatedResultType<NoteType>> {
     const filteredNotes = this.notes.filter((note) => ids.includes(note.id));
 
     return this.applyQueryParams(filteredNotes, params);
   }
 
-  async create(data: CreateNoteDto): Promise<Note> {
+  async create(data: CreateNoteType): Promise<NoteType> {
     const now = new Date();
-    const newNote: Note = {
+    const newNote: NoteType = {
       id: uuidv4(),
       ...data,
       createdAt: now,
@@ -92,7 +94,7 @@ export class MockDbNoteRepository implements INoteRepository {
     return newNote;
   }
 
-  async update(id: string, data: UpdateNoteDto): Promise<Note | null> {
+  async update(id: string, data: UpdateNoteType): Promise<NoteType | null> {
     const noteIndex = this.notes.findIndex((n) => n.id === id);
     if (noteIndex === -1) {
       return null;

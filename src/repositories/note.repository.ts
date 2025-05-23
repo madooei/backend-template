@@ -1,18 +1,21 @@
 import type {
-  Note,
-  CreateNoteDto,
-  UpdateNoteDto,
+  NoteType,
+  CreateNoteType,
+  UpdateNoteType,
 } from "@/schemas/note.schema.ts";
-import type { QueryParams, PaginatedResult } from "@/schemas/shared.schema.ts";
+import type {
+  QueryParamsType,
+  PaginatedResultType,
+} from "@/schemas/shared.schema.ts";
 
 export interface INoteRepository {
-  findAll(params: QueryParams): Promise<PaginatedResult<Note>>;
-  findById(id: string): Promise<Note | null>;
+  findAll(params: QueryParamsType): Promise<PaginatedResultType<NoteType>>;
+  findById(id: string): Promise<NoteType | null>;
   findAllByIds(
     ids: string[],
-    params: QueryParams,
-  ): Promise<PaginatedResult<Note>>;
-  create(data: CreateNoteDto): Promise<Note>;
-  update(id: string, data: UpdateNoteDto): Promise<Note | null>;
+    params: QueryParamsType,
+  ): Promise<PaginatedResultType<NoteType>>;
+  create(data: CreateNoteType): Promise<NoteType>;
+  update(id: string, data: UpdateNoteType): Promise<NoteType | null>;
   delete(id: string): Promise<boolean>;
 }

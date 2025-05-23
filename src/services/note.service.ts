@@ -1,11 +1,11 @@
 import type { INoteRepository } from "@/repositories/note.repository.ts";
-import type { PaginatedResult } from "@/schemas/shared.schema.ts";
+import type { PaginatedResultType } from "@/schemas/shared.schema.ts";
 import type {
-  CreateNoteDto,
-  Note,
-  UpdateNoteDto,
+  CreateNoteType,
+  NoteType,
+  UpdateNoteType,
 } from "@/schemas/note.schema.ts";
-import type { QueryParams } from "@/schemas/shared.schema.ts";
+import type { QueryParamsType } from "@/schemas/shared.schema.ts";
 
 export class NoteService {
   private readonly noteRepository: INoteRepository;
@@ -14,19 +14,21 @@ export class NoteService {
     this.noteRepository = noteRepository;
   }
 
-  async getAllNotes(params: QueryParams): Promise<PaginatedResult<Note>> {
+  async getAllNotes(
+    params: QueryParamsType,
+  ): Promise<PaginatedResultType<NoteType>> {
     return this.noteRepository.findAll(params);
   }
 
-  async getById(id: string): Promise<Note | null> {
+  async getById(id: string): Promise<NoteType | null> {
     return this.noteRepository.findById(id);
   }
 
-  async create(data: CreateNoteDto): Promise<Note> {
+  async create(data: CreateNoteType): Promise<NoteType> {
     return this.noteRepository.create(data);
   }
 
-  async update(id: string, data: UpdateNoteDto): Promise<Note | null> {
+  async update(id: string, data: UpdateNoteType): Promise<NoteType | null> {
     return this.noteRepository.update(id, data);
   }
 

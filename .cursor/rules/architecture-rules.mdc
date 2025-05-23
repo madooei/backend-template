@@ -11,7 +11,7 @@ This codebase follows a layered architecture. When implementing new features or 
 - **Primary Role:** Defines the canonical shape and validation rules for all data structures within the application.
 - **Responsibilities:**
     - Define Zod schemas for core domain entities (e.g., `Note`).
-    - Define Data Transfer Object (DTO) schemas for request/response bodies (e.g., `CreateNoteDto`, `UpdateNoteDto`).
+    - Define Data Transfer Object (DTO) schemas for request/response bodies (e.g., `CreateNote`, `UpdateNote`).
     - Define schemas for query parameters (e.g., `NoteQueryParams`).
     - Serve as the single source of truth for data validation logic (including type coercion, required fields, enums, and string formats).
     - Enable automatic TypeScript type inference from schemas (`z.infer<typeof schemaName>`).
@@ -54,3 +54,21 @@ This codebase follows a layered architecture. When implementing new features or 
     - The calling service passes `UserContext` to the called service.
     - Called services perform task-specific authorization without repeating top-level permission checks.
 - **Key Principle:** Services act as the application's brain, managing business rules, validations, data access, and integrations.
+
+## The Controller Layer
+
+- **Location:** `src/controllers/`
+- **Primary Role:** Serves as the interface between HTTP requests/responses and the application's business logic (Service Layer).
+- **Responsibilities:**
+    1. **HTTP Interaction:** Parses incoming HTTP requests (path parameters, query strings, request bodies).
+    2. **Request Validation:** Uses dedicated validation middleware (`src/middlewares/validation.ts`) configured in `src/app.ts` with Zod DTOs/schemas from `src/schemas/`. This middleware validates incoming request data structure and types. Failed validation triggers an `HTTPException` (typically 400) before reaching the controller. Controllers access pre-validated data through `c.var` (e.g., `c.var.validatedBody`, `c.var.validatedQuery`).
+    3. **User Context:** Accesses `UserContext` (set by `authMiddleware` in `c.var.user`) and passes it to the Service layer for authorization and attribution.
+    4. **Delegation:** Calls one primary Service layer method to handle the business operation, passing pre-validated data, path parameters, and `UserContext`.
+    5. **Response Formatting:** Formats HTTP responses based on Service layer output using `c.json(data, statusCode)` for success or maps service errors to appropriate `HTTPException` instances.
+- **Does NOT Do:**
+    - Handle complex business logic or rule validation (Services' responsibility)
+    - Interact directly with repositories (Services' responsibility)
+    - Perform detailed resource-based authorization (Services handle this, often via `AuthorizationService`)
+    - Orchestrate multiple service calls (complex operations belong in a service method)
+    - Call external APIs or third-party services directly (Services' responsibility)
+- **Key Principle:** Controllers should remain lightweight and focused on HTTP handling. They act as traffic directors and translators, using middleware for basic validation while delegating business decisions to services.
