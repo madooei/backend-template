@@ -27,3 +27,11 @@ export const paginatedResultsSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 export type PaginatedResultType<T> = z.infer<
   ReturnType<typeof paginatedResultsSchema<z.ZodTypeAny>>
 > & { data: T[] }; // Generic data type
+
+// Schema for validating a single string ID from path parameters
+export const entityIdParamSchema = (paramName: string) =>
+  z.object({
+    [paramName]: z.string().min(1, { message: `${paramName} cannot be empty` }),
+  });
+
+export type EntityIdParamType = z.infer<ReturnType<typeof entityIdParamSchema>>;
