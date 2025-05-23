@@ -33,6 +33,18 @@ cp .env.example .env
 
 Adjust the environment variables as needed.
 
+### External Authentication Service
+
+This template assumes an external User Authentication Service (`auth-service`) for user verification and information retrieval rather than implementing authentication directly. For development purposes, a minimal mock authentication service is provided. Start it using this command:
+
+```bash
+npx tsx scripts/mock-auth-service.ts
+```
+
+The mock service will run at `http://localhost:3333`. Set this URL as your `AUTH_SERVICE_URL` environment variable in the `.env` file.
+
+For more information about authentication and authorization, see [docs/auth.md](docs/auth.md).
+
 ### Using Docker (Recommended)
 
 You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https://code.visualstudio.com/) installed on your machine. You also need to have the ["Remote - Containers" extension pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed in Visual Studio Code.

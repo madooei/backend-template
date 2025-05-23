@@ -43,15 +43,16 @@ This codebase follows a layered architecture. When implementing new features or 
 - **Primary Role:** Encapsulates business logic, orchestrates data operations, and enforces application rules.
 - **Responsibilities:**
     1. **Business Logic Implementation:** Contains core logic for all use cases and operations (e.g., creating notes, accepting share invites).
-    2. **Fine-Grained Authorization:** Performs permission checks using `UserContext` and resource-specific data. This includes checking ownership and roles (e.g., note author). An `AuthorizationService` centralizes this logic for other services.
-    3. **Business Rule Validation:** Enforces complex validation rules beyond basic data validation (e.g., email uniqueness, verification code expiration, course capacity checks).
-    4. **Data Orchestration & Integrity:** Uses repository interfaces to fetch and persist data. Manages operations requiring multiple data sources (e.g., verifying `userId` and `courseId` before creating a `Membership`).
-    5. **External Service Integration:** Manages external API calls through dedicated client modules (e.g., syncing rosters with Canvas LMS).
-    6. **Transaction Management:** Handles atomic operations across multiple database writes when native database support isn't available.
-    7. **Return Values:** Returns domain objects from `src/schemas/` or business errors that controllers map to HTTP responses.
+    2. **Basic Authentication:** Performs basic authentication to validate a Beare token and exchange it for user information. An `AuthenticationService` centralizes this logic for other services.
+    3. **Fine-Grained Authorization:** Performs permission checks using user information and resource-specific data. This includes checking ownership and roles (e.g., teacher vs. student). An `AuthorizationService` centralizes this logic for other services.
+    4. **Business Rule Validation:** Enforces complex validation rules beyond basic data validation (e.g., email uniqueness, verification code expiration, course capacity checks).
+    5. **Data Orchestration & Integrity:** Uses repository interfaces to fetch and persist data. Manages operations requiring multiple data sources (e.g., verifying `userId` and `courseId` before creating a `Membership`).
+    6. **External Service Integration:** Manages external API calls through dedicated client modules (e.g., syncing rosters with Canvas LMS).
+    7. **Transaction Management:** Handles atomic operations across multiple database writes when native database support isn't available.
+    8. **Return Values:** Returns domain objects from `src/schemas/` or business errors that controllers map to HTTP responses.
 - **Service-to-Service Communication:**
     - Allowed when completing user-initiated operations that require multiple services.
-    - The calling service passes `UserContext` to the called service.
+    - The calling service passes user object to the called service.
     - Called services perform task-specific authorization without repeating top-level permission checks.
 - **Key Principle:** Services act as the application's brain, managing business rules, validations, data access, and integrations.
 
@@ -62,8 +63,8 @@ This codebase follows a layered architecture. When implementing new features or 
 - **Responsibilities:**
     1. **HTTP Interaction:** Parses incoming HTTP requests (path parameters, query strings, request bodies).
     2. **Request Validation:** Uses dedicated validation middleware (`src/middlewares/validation.ts`) configured in `src/app.ts` with Zod DTOs/schemas from `src/schemas/`. This middleware validates incoming request data structure and types. Failed validation triggers an `HTTPException` (typically 400) before reaching the controller. Controllers access pre-validated data through `c.var` (e.g., `c.var.validatedBody`, `c.var.validatedQuery`).
-    3. **User Context:** Accesses `UserContext` (set by `authMiddleware` in `c.var.user`) and passes it to the Service layer for authorization and attribution.
-    4. **Delegation:** Calls one primary Service layer method to handle the business operation, passing pre-validated data, path parameters, and `UserContext`.
+    3. **User Context:** Accesses `user: AuthenticatedUserContextType` (set by `authMiddleware` in `c.var.user`) and passes it to the Service layer for authorization and attribution.
+    4. **Delegation:** Calls one primary Service layer method to handle the business operation, passing pre-validated data, path parameters, and `user: AuthenticatedUserContextType`.
     5. **Response Formatting:** Formats HTTP responses based on Service layer output using `c.json(data, statusCode)` for success or maps service errors to appropriate `HTTPException` instances.
 - **Does NOT Do:**
     - Handle complex business logic or rule validation (Services' responsibility)
@@ -78,7 +79,7 @@ This codebase follows a layered architecture. When implementing new features or 
 - **Location:** `src/middlewares/`
 - **Primary Role:** Intercepts requests and responses to perform cross-cutting operations before route handling or after response generation.
 - **Responsibilities:**
-    1. **Authentication & Authorization Context:** Verifies user identity (e.g., `auth.middleware.ts` checking tokens/headers) and populates a `UserContext` (e.g., onto `c.var.user`) for downstream use.
+    1. **Authentication & Authorization Context:** Verifies user identity (e.g., `auth.middleware.ts` checking tokens/headers) and populates a `user: AuthenticatedUserContextType` (e.g., onto `c.var.user`) for downstream use.
     2. **Request Validation:** Validates incoming request data structure and types using Zod schemas from `src/schemas/`. This uses dedicated validation middleware (e.g., `zodValidator` or custom `validation.middleware.ts`). Failed validation triggers an appropriate `HTTPException` (400 or 422).
     3. **Global Error Handling:** Catches unhandled exceptions, logs them, and transforms them into standardized HTTP error responses.
     4. **Logging:** Records request and response details for monitoring, debugging, and auditing.
@@ -112,8 +113,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Handle complex business logic or data manipulation (Services' role)
     - Define global middleware (belongs in `app.ts`)
     - Interact with the Data Access Layer (Repositories)
-- **Key Principle:** Acts as the API's switchboard, defining endpoints and their requirements while keeping `app.ts` streamlined through modular route definitions.
-- **Interaction:**
+- **Key Principle:** Acts as the API's switchboard, defining endpoints and their requirements while keeping `app.ts` streamlined through modular route definitions.- **Interaction:**
   - Route modules (e.g., `noteRoutes` from `note.routes.ts`) are imported and mounted by `src/app.ts` onto base paths (e.g., `app.route("/notes", noteRoutes)`).
   - Calls methods on Controller instances.
   - Utilizes Middlewares (especially validation middlewares) to process requests before they reach controller handlers.
