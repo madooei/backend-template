@@ -33,10 +33,7 @@ export class NoteController {
     const note = await this.noteService.getById(id);
 
     if (!note) {
-      return c.json(
-        { message: "Note not found" },
-        404,
-      );
+      return c.json({ message: "Note not found" }, 404);
     }
 
     return c.json(note);
@@ -72,10 +69,7 @@ export class NoteController {
     const note = await this.noteService.update(id, result.data);
 
     if (!note) {
-      return c.json(
-        { message: "Note not found" },
-        404,
-      );
+      return c.json({ message: "Note not found" }, 404);
     }
 
     return c.json(note);
@@ -86,10 +80,7 @@ export class NoteController {
     const success = await this.noteService.delete(id);
 
     if (!success) {
-      return c.json(
-        { message: "Note not found" },
-        404,
-      );
+      return c.json({ message: "Note not found" }, 404);
     }
 
     return c.json({ message: "Note deleted successfully" });

@@ -10,6 +10,7 @@ The application follows a common layered architecture pattern, consisting of the
 2.  **Data Access Layer (Repositories)**: Abstracts the interaction with the data store (e.g., MongoDB).
 3.  **Services Layer**: Contains the core business logic of the application.
 4.  **Controllers Layer**: Handles incoming HTTP requests and outgoing responses.
+5.  **Router Layer**: Handles the routing of requests to the appropriate controller.
 
 ## Technology Stack
 
