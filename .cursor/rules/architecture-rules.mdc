@@ -72,3 +72,23 @@ This codebase follows a layered architecture. When implementing new features or 
     - Orchestrate multiple service calls (complex operations belong in a service method)
     - Call external APIs or third-party services directly (Services' responsibility)
 - **Key Principle:** Controllers should remain lightweight and focused on HTTP handling. They act as traffic directors and translators, using middleware for basic validation while delegating business decisions to services.
+
+## The Routes Layer
+
+- **Location:** `src/routes/`
+- **Primary Role:** Maps HTTP routes to controller handlers and applies route-level middleware, serving as the API's entry points.
+- **Responsibilities:**
+    1. **Route Definition:** Maps HTTP methods (GET, POST, PUT, DELETE) to specific domain routes (e.g., all `/notes/*` routes in `note.routes.ts`).
+    2. **Controller Handler Association:** Links routes with their corresponding controller methods (e.g., `NoteController`).
+    3. **Route-Specific Middleware Application:** Applies middleware for specific routes or route groups. This includes:
+        - Path parameter validation (e.g., using `validate` middleware with `entityIdParamSchema` for `:noteId`)
+        - Route-specific query parameter or request body validation not covered by global middleware in `app.ts` or controller decorators
+        - Fine-grained authorization checks specific to certain routes
+    4. **Modularity and Organization:** Groups related routes into dedicated files (e.g., `note.routes.ts`, `user.routes.ts`), each exporting a Hono router instance.
+    5. **Parameter Context Preparation:** Sets up validation middleware to populate `c.var` (e.g., `c.var.validatedParams`, `c.var.validatedCourseParams`) for controller access.
+- **Does NOT Do:**
+    - Implement request handling logic (Controllers' role)
+    - Handle complex business logic or data manipulation (Services' role)
+    - Define global middleware (belongs in `app.ts`)
+    - Interact with the Data Access Layer (Repositories)
+- **Key Principle:** Acts as the API's switchboard, defining endpoints and their requirements while keeping `app.ts` streamlined through modular route definitions.
