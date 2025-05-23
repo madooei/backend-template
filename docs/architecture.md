@@ -10,6 +10,8 @@ The application follows a common layered architecture pattern, consisting of the
 2.  **Data Access Layer (Interfaces and Implementations following the Repository Pattern):** Abstracts the interaction with the data store (e.g., MongoDB).
 3.  **Services Layer:** Contains the core business logic of the application.
 4.  **Controllers Layer:** Handles incoming HTTP requests and outgoing responses.
+5.  **Middlewares Layer:** Handles cross-cutting concerns that apply to multiple routes or requests.
+6.  **Routes Layer:** Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
 
 ## Layer Details
 
@@ -45,13 +47,25 @@ The application follows a common layered architecture pattern, consisting of the
 - **Location:** `src/controllers/` (e.g., `src/controllers/note-controller.ts`)
 - **Responsibility:**
   - Receive HTTP requests from clients.
-  - Parse request parameters, body, and headers.
-  - Perform initial input validation (leveraging Zod schemas).
+  - Parse request parameters, body, and headers (can delegate to middlewares).
+  - Perform initial input validation (leveraging Zod schemas; can delegate to middlewares).
   - Call appropriate methods in the Services Layer to perform business operations.
-  - Format and send HTTP responses (data, status codes, error messages).
+  - Format and send HTTP responses (data, status codes, error messages; can delegate to middlewares).
 - **Framework:** Hono.js is used for routing and request/response handling.
 
-### 5. Routes Layer
+### 5. Middlewares
+
+- **Location:** `src/middlewares/`
+- **Responsibility:**
+  - Handle cross-cutting concerns that apply to multiple routes or requests.
+  - Examples include:
+    - **Input Validation (`validation.middleware.ts`):** Using Zod schemas to validate incoming data (body, query, params).
+    - **Authentication (`auth.middleware.ts`):** Verifying user identity (via headers or tokens) and populating user context.
+    - **Error Handling (`error.middleware.ts`):** Catching errors and formatting standardized error responses.
+    - **Logging (`logging.middleware.ts`):** Recording request/response details.
+- **Framework:** Hono.js provides a middleware mechanism.
+
+### 6. Routes Layer
 
 - **Location:** `src/routes/` (e.g., `src/routes/note.router.ts`)
 - **Responsibility:**

@@ -3,8 +3,9 @@ import { createNoteRoutes } from "@/routes/note.router.ts";
 import { NoteController } from "@/controllers/note-controller.ts";
 import { NoteService } from "@/services/note.service.ts";
 import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
+import type { AppEnv } from "@/schemas/app-env.schema.ts";
 
-export const app = new Hono();
+export const app = new Hono<AppEnv>();
 
 app.get("/", (c) => {
   console.log("Hello Hono!"); // Let's stop here to test the debugger (add a breakpoint here, and run the debugger)

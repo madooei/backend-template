@@ -73,6 +73,27 @@ This codebase follows a layered architecture. When implementing new features or 
     - Call external APIs or third-party services directly (Services' responsibility)
 - **Key Principle:** Controllers should remain lightweight and focused on HTTP handling. They act as traffic directors and translators, using middleware for basic validation while delegating business decisions to services.
 
+## The Middleware Layer
+
+- **Location:** `src/middlewares/`
+- **Primary Role:** Intercepts requests and responses to perform cross-cutting operations before route handling or after response generation.
+- **Responsibilities:**
+    1. **Authentication & Authorization Context:** Verifies user identity (e.g., `auth.middleware.ts` checking tokens/headers) and populates a `UserContext` (e.g., onto `c.var.user`) for downstream use.
+    2. **Request Validation:** Validates incoming request data structure and types using Zod schemas from `src/schemas/`. This uses dedicated validation middleware (e.g., `zodValidator` or custom `validation.middleware.ts`). Failed validation triggers an appropriate `HTTPException` (400 or 422).
+    3. **Global Error Handling:** Catches unhandled exceptions, logs them, and transforms them into standardized HTTP error responses.
+    4. **Logging:** Records request and response details for monitoring, debugging, and auditing.
+    5. **Other Cross-Cutting Concerns:** Handles broad functionalities like CORS configuration, rate limiting, security headers, and response compression.
+- **Does NOT Do:**
+    - Contain domain-specific business logic (Services Layer's responsibility)
+    - Directly interact with Data Repositories (should use simple context or services for complex data needs)
+    - Make core controller or service decisions (like choosing service methods or enforcing business rules)
+- **Key Principle:** Middlewares are reusable components that handle common request-response concerns. They prepare context, validate early, and manage cross-cutting issues, keeping controller and service logic focused.
+- **Interaction:**
+    - Configures globally or per route group in `src/app.ts` or router setup
+    - Reads and modifies request data or Hono context (`c.set()`, `c.get()`, `c.var`)
+    - Can stop request flow early (e.g., for auth failures or invalid input)
+    - Uses schemas from `src/schemas/` for validation
+
 ## The Routes Layer
 
 - **Location:** `src/routes/`
@@ -92,3 +113,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Define global middleware (belongs in `app.ts`)
     - Interact with the Data Access Layer (Repositories)
 - **Key Principle:** Acts as the API's switchboard, defining endpoints and their requirements while keeping `app.ts` streamlined through modular route definitions.
+- **Interaction:**
+  - Route modules (e.g., `noteRoutes` from `note.routes.ts`) are imported and mounted by `src/app.ts` onto base paths (e.g., `app.route("/notes", noteRoutes)`).
+  - Calls methods on Controller instances.
+  - Utilizes Middlewares (especially validation middlewares) to process requests before they reach controller handlers.
