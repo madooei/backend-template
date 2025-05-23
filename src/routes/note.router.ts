@@ -2,11 +2,11 @@ import { Hono } from "hono";
 import type { NoteController } from "@/controllers/note-controller.ts";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
 import { validate } from "@/middlewares/validation.middleware.ts";
+import { entityIdParamSchema } from "@/schemas/shared.schema.ts";
 import {
-  entityIdParamSchema,
-  queryParamsSchema,
-} from "@/schemas/shared.schema.ts";
-import { createNoteSchema } from "@/schemas/note.schema.ts";
+  createNoteSchema,
+  noteQueryParamsSchema,
+} from "@/schemas/note.schema.ts";
 import {
   authMiddleware,
   ensureAuthenticated,
@@ -23,7 +23,7 @@ export const createNoteRoutes = (noteController: NoteController) => {
   noteRoutes.get(
     "/",
     validate({
-      schema: queryParamsSchema,
+      schema: noteQueryParamsSchema,
       source: "query",
       varKey: "validatedQuery",
     }),

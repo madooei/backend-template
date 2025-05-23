@@ -3,12 +3,12 @@ import type {
   NoteType,
   CreateNoteType,
   UpdateNoteType,
+  NoteQueryParamsType,
 } from "@/schemas/note.schema.ts";
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
   type PaginatedResultType,
-  type QueryParamsType,
 } from "@/schemas/shared.schema.ts";
 import type { INoteRepository } from "@/repositories/note.repository.ts";
 
@@ -17,14 +17,21 @@ export class MockDbNoteRepository implements INoteRepository {
 
   private applyQueryParams(
     notes: NoteType[],
-    params: QueryParamsType,
+    params: NoteQueryParamsType
   ): PaginatedResultType<NoteType> {
     let filteredNotes = notes;
+
+    const createdBy = params.createdBy;
+    if (createdBy) {
+      filteredNotes = filteredNotes.filter(
+        (note) => note.createdBy === createdBy
+      );
+    }
 
     const searchTerm = params.search?.toLowerCase().trim();
     if (searchTerm) {
       filteredNotes = filteredNotes.filter((note) =>
-        note.content.toLowerCase().includes(searchTerm.toLowerCase()),
+        note.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -63,7 +70,7 @@ export class MockDbNoteRepository implements INoteRepository {
   }
 
   async findAll(
-    params: QueryParamsType,
+    params: NoteQueryParamsType
   ): Promise<PaginatedResultType<NoteType>> {
     return this.applyQueryParams(this.notes, params);
   }
@@ -75,18 +82,22 @@ export class MockDbNoteRepository implements INoteRepository {
 
   async findAllByIds(
     ids: string[],
-    params: QueryParamsType,
+    params: NoteQueryParamsType
   ): Promise<PaginatedResultType<NoteType>> {
     const filteredNotes = this.notes.filter((note) => ids.includes(note.id));
 
     return this.applyQueryParams(filteredNotes, params);
   }
 
-  async create(data: CreateNoteType): Promise<NoteType> {
+  async create(
+    data: CreateNoteType,
+    createdByUserId: string
+  ): Promise<NoteType> {
     const now = new Date();
     const newNote: NoteType = {
       id: uuidv4(),
       ...data,
+      createdBy: createdByUserId,
       createdAt: now,
       updatedAt: now,
     };
