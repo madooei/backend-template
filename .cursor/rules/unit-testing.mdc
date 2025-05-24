@@ -7,7 +7,7 @@ alwaysApply: false
 
 ## Overview
 
-We use [Vitest](https://vitest.dev/) as our testing framework. All tests are located in the `tests/` directory, mirroring the structure of `src/` to maintain clear organization and make it easy to locate corresponding test files. For example, `src/controllers/note.controller.ts` should have its test at `tests/controllers/note.controller.test.ts`.
+We use [Vitest](mdc:https:/vitest.dev) as our testing framework. All tests are located in the `tests/` directory, mirroring the structure of `src/` to maintain clear organization and make it easy to locate corresponding test files. For example, `src/controllers/note.controller.ts` should have its test at `tests/controllers/note.controller.test.ts`.
 
 ## Testing Strategy
 

@@ -3,9 +3,37 @@ description:
 globs: 
 alwaysApply: true
 ---
-This codebase follows a layered architecture. When implementing new features or updating existing ones, respect the following layers and their boundaries.
+# About This Project
 
-## 1. The Model Layer (Zod Schemas & TypeScript Types)
+This is a template for a backend service built with TypeScript and Hono.js. It provides a basic structure for creating RESTful APIs.
+
+## Technology Stack
+
+- **Language:** TypeScript
+- **Framework:** Hono.js
+- **Bundler:** Tsup (We use tsx for development, and tsup for production)
+- **Linter:** ESLint
+- **Formatter:** Prettier
+- **Testing:** Vitest
+
+## Architecture
+
+The application follows a common layered architecture pattern, consisting of the following main layers:
+
+## Layers Overview
+
+- **Model Layer (Schemas)**: Defines the structure and validation rules for data entities (e.g., `Note`, `UserContext`), DTOs (Data Transfer Objects), and query parameters.
+- **Data Access Layer (Repositories)**: Abstracts the interaction with the data store (e.g., MongoDB).
+- **Services Layer**: Contains the core business logic of the application.
+- **Controllers Layer**: Handles incoming HTTP requests and outgoing responses.
+- **Middlewares Layer**: Handles cross-cutting concerns that apply to multiple routes or requests.
+- **Routes Layer**: Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
+
+## Layer Details
+
+When implementing new features or updating existing ones, respect the following layers and their boundaries.
+
+### The Model Layer (Zod Schemas & TypeScript Types)
 
 - **Location:** `src/schemas/`
 - **Primary Role:** Defines the canonical shape and validation rules for all data structures within the application.
@@ -18,7 +46,7 @@ This codebase follows a layered architecture. When implementing new features or 
 - **Used By:** All other layers (Controllers, Services, Repositories) for data consistency and validation.
 - **Key Principle:** If it concerns data structure, type, or basic validation rules, it belongs here.
 
-## 2. The Data Access Layer (Interfaces and Implementations following the Repository Pattern)
+### The Data Access Layer (Interfaces and Implementations following the Repository Pattern)
 
 - **Location:** `src/repositories/`
 - **Primary Role:** Abstracts all database interactions, providing a clean API for the Service layer to handle data persistence and retrieval.
@@ -37,7 +65,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Validate the shape/type of DTOs or domain objects passed *to it* by the Service layer. The repository assumes that data has been validated by higher layers according to business rules.
 - **Key Principle:** Repositories act as data access gateways, isolating database concerns and ensuring data conformity to defined models.
 
-## 3. The Service Layer
+### The Service Layer
 
 - **Location:** `src/services/`
 - **Primary Role:** Encapsulates business logic, orchestrates data operations, and enforces application rules.
@@ -56,7 +84,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Called services perform task-specific authorization without repeating top-level permission checks.
 - **Key Principle:** Services act as the application's brain, managing business rules, validations, data access, and integrations.
 
-## The Controller Layer
+### The Controller Layer
 
 - **Location:** `src/controllers/`
 - **Primary Role:** Serves as the interface between HTTP requests/responses and the application's business logic (Service Layer).
@@ -74,7 +102,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Call external APIs or third-party services directly (Services' responsibility)
 - **Key Principle:** Controllers should remain lightweight and focused on HTTP handling. They act as traffic directors and translators, using middleware for basic validation while delegating business decisions to services.
 
-## The Middleware Layer
+### The Middleware Layer
 
 - **Location:** `src/middlewares/`
 - **Primary Role:** Intercepts requests and responses to perform cross-cutting operations before route handling or after response generation.
@@ -95,7 +123,7 @@ This codebase follows a layered architecture. When implementing new features or 
     - Can stop request flow early (e.g., for auth failures or invalid input)
     - Uses schemas from `src/schemas/` for validation
 
-## The Routes Layer
+### The Routes Layer
 
 - **Location:** `src/routes/`
 - **Primary Role:** Maps HTTP routes to controller handlers and applies route-level middleware, serving as the API's entry points.

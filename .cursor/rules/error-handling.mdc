@@ -3,6 +3,8 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Guidelines on Error Handling
+
 We use custom errors in this project. The error classes are located in the `src/errors` folder:
 
 ```plaintext
