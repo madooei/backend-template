@@ -21,7 +21,7 @@ export class NoteService {
 
   async getAll(
     params: NoteQueryParamsType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<PaginatedResultType<NoteType>> {
     if (this.authorizationService.isAdmin(user)) {
       return this.noteRepository.findAll(params);
@@ -31,7 +31,7 @@ export class NoteService {
 
   async getById(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     if (!(await this.authorizationService.canViewNote(user, id))) {
       throw new UnauthenticatedError("Unauthorized to view note");
@@ -42,7 +42,7 @@ export class NoteService {
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
     if (!(await this.authorizationService.canCreateNote(user))) {
       throw new UnauthenticatedError("Unauthorized to create note");
@@ -54,7 +54,7 @@ export class NoteService {
   async update(
     id: string,
     data: UpdateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     if (!(await this.authorizationService.canUpdateNote(user, id))) {
       throw new UnauthenticatedError("Unauthorized to update note");
@@ -65,7 +65,7 @@ export class NoteService {
 
   async delete(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<boolean> {
     if (!(await this.authorizationService.canDeleteNote(user, id))) {
       throw new UnauthenticatedError("Unauthorized to delete note");

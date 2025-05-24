@@ -20,6 +20,7 @@ The application follows a common layered architecture pattern, consisting of the
 - **Bundler:** Tsup (We use tsx for development, and tsup for production)
 - **Linter:** ESLint
 - **Formatter:** Prettier
+- **Testing:** Vitest
 
 ## Local Development
 
@@ -119,6 +120,17 @@ server {
 ```
 
 This will map the port `3000` (assuming the port is `3000` in the `.env` file) to the port `80` on the production server which is the default port for `nginx`.
+
+## Testing
+
+We use [Vitest](https://vitest.dev/) for testing. All tests are in the `tests/` directory. This folder should replicate the `src/` folder structure. We aim to test the code at each layer of the application in isolation, by mocking dependencies.
+
+- Run all tests: `pnpm test`
+- Run tests in watch mode: `pnpm test:watch`
+- Run tests with coverage: `pnpm test:coverage` (coverage is reported in the `coverage/` directory)
+- Run specific test file: `pnpm test -- tests/controllers/note.controller.test.ts`
+
+For more information about testing, see [docs/testing.md](docs/testing.md).
 
 ## Scripts
 
