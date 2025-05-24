@@ -1,0 +1,68 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+We use custom errors in this project. The error classes are located in the `src/errors` folder:
+
+```plaintext
+.
+├── bad-request.error.ts
+├── internal-server.error.ts
+├── not-found.error.ts
+├── service-unavailable.error.ts
+├── unauthenticated.error.ts
+└── unauthorized.error.ts
+```
+
+Here is an example class:
+
+```ts
+import type { HTTPExceptionOptions } from "@/schemas/shared.schema.ts";
+import { HTTPException } from "hono/http-exception";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
+export class UnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class UnauthorizedHTTPException extends HTTPException {
+  constructor(options?: HTTPExceptionOptions) {
+    const status = 403 as ContentfulStatusCode;
+    const message = options?.message || "Unauthorized";
+    const cause = options?.cause;
+    const res = options?.res;
+
+    super(status, { message, cause, res });
+    this.name = "UnauthorizedHTTPException";
+  }
+}
+```
+
+Controllers and Middleware should throw HTTPException subtypes, while Services and other layers should throw subclasses of Error. There is a global error handler in `src/app.ts`:
+
+```ts
+app.onError((err, c) => {
+  console.error(err);
+  if (err instanceof HTTPException) {
+    return c.json({ error: err.message, cause: err.cause }, err.status);
+  } else if (err instanceof NotFoundError) {
+    return c.json({ error: err.message }, 404);
+  } else if (err instanceof UnauthenticatedError) {
+    return c.json({ error: err.message }, 401);
+  } else if (err instanceof UnauthorizedError) {
+    return c.json({ error: err.message }, 403);
+  } else if (err instanceof ServiceUnavailableError) {
+    return c.json({ error: err.message }, 503);
+  } else if (err instanceof BadRequestError) {
+    return c.json({ error: err.message }, 400);
+  } else {
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
+```
+
+We should maintain this pattern for error handling.

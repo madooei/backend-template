@@ -1,10 +1,14 @@
 import { z } from "zod";
 import { queryParamsSchema } from "./shared.schema.ts";
+import { userIdSchema } from "./user.schemas.ts";
+
+export const noteIdSchema = z.string();
+export type NoteIdType = z.infer<typeof noteIdSchema>;
 
 export const noteSchema = z.object({
-  id: z.string(), // Primary key for the Note record
+  id: noteIdSchema, // Primary key for the Note record
   content: z.string(),
-  createdBy: z.string(), // User ID (string)
+  createdBy: userIdSchema, // User ID (string)
   createdAt: z.date().optional(), // Set by DB/service, present on retrieved entities
   updatedAt: z.date().optional(), // Set by DB/service, present on retrieved entities
 });
@@ -37,6 +41,6 @@ export const updateNoteSchema = noteSchema
 export type UpdateNoteType = z.infer<typeof updateNoteSchema>;
 
 export const noteQueryParamsSchema = queryParamsSchema.extend({
-  createdBy: z.string().optional(),
+  createdBy: userIdSchema.optional(),
 });
 export type NoteQueryParamsType = z.infer<typeof noteQueryParamsSchema>;

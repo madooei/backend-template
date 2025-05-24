@@ -3,6 +3,8 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import type { ZodTypeAny } from "zod";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import { InternalServerHTTPException } from "@/errors/internal-server.error.ts";
+import { BadRequestHTTPException } from "@/errors/bad-request.error.ts";
 
 /**
  * Defines the possible sources from which data can be validated.
@@ -75,7 +77,7 @@ export const validate = (
         default:
           // Should not happen if types are correct
           console.warn(`ValidationMiddleware: Unknown data source "${source}"`);
-          throw new HTTPException(500, {
+          throw new InternalServerHTTPException({
             message: "Internal server error: Invalid validation configuration.",
           });
       }
@@ -88,7 +90,7 @@ export const validate = (
           ? "Invalid JSON in request body."
           : `Error reading request ${source}.`;
       }
-      throw new HTTPException(400, { message });
+      throw new BadRequestHTTPException({ message });
     }
 
     const result = schema.safeParse(dataToValidate);
@@ -98,7 +100,7 @@ export const validate = (
       const fieldErrorMessages = Object.entries(fieldErrors)
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
-      throw new HTTPException(400, {
+      throw new BadRequestHTTPException({
         message: `Validation failed for ${source}. ${fieldErrorMessages}`,
         cause: result.error.flatten(),
       });

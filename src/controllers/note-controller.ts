@@ -8,6 +8,7 @@ import type {
 } from "@/schemas/note.schema.ts";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import { NotFoundHTTPException } from "@/errors/not-found.error.ts";
 
 export class NoteController {
   private noteService: NoteService;
@@ -29,7 +30,9 @@ export class NoteController {
     const note = await this.noteService.getById(id, user);
 
     if (!note) {
-      return c.json({ message: "Note not found" }, 404);
+      throw new NotFoundHTTPException({
+        message: "Note not found",
+      });
     }
 
     return c.json(note);
@@ -49,7 +52,9 @@ export class NoteController {
     const note = await this.noteService.update(id, body, user);
 
     if (!note) {
-      return c.json({ message: "Note not found" }, 404);
+      throw new NotFoundHTTPException({
+        message: "Note not found",
+      });
     }
 
     return c.json(note);
@@ -61,7 +66,9 @@ export class NoteController {
     const success = await this.noteService.delete(id, user);
 
     if (!success) {
-      return c.json({ message: "Note not found" }, 404);
+      throw new NotFoundHTTPException({
+        message: "Note not found",
+      });
     }
 
     return c.json({ message: "Note deleted successfully" });

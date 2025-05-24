@@ -35,3 +35,10 @@ export const entityIdParamSchema = (paramName: string) =>
   });
 
 export type EntityIdParamType = z.infer<ReturnType<typeof entityIdParamSchema>>;
+
+// Hono's HTTPExceptionOptions type
+export type HTTPExceptionOptions = {
+  res?: Response;
+  message?: string;
+  cause?: unknown;
+};
