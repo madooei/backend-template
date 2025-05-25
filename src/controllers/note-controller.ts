@@ -8,7 +8,7 @@ import type {
 } from "@/schemas/note.schema.ts";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { NotFoundHTTPException } from "@/errors/not-found.error.ts";
+import { NotFoundError } from "@/errors.ts";
 
 export class NoteController {
   private noteService: NoteService;
@@ -28,13 +28,7 @@ export class NoteController {
     const user = c.var.user as AuthenticatedUserContextType;
     const { id } = c.var.validatedParams as EntityIdParamType;
     const note = await this.noteService.getById(id, user);
-
-    if (!note) {
-      throw new NotFoundHTTPException({
-        message: "Note not found",
-      });
-    }
-
+    if (!note) throw new NotFoundError();
     return c.json(note);
   };
 
@@ -50,13 +44,7 @@ export class NoteController {
     const { id } = c.var.validatedParams as EntityIdParamType;
     const body = c.var.validatedBody as UpdateNoteType;
     const note = await this.noteService.update(id, body, user);
-
-    if (!note) {
-      throw new NotFoundHTTPException({
-        message: "Note not found",
-      });
-    }
-
+    if (!note) throw new NotFoundError();
     return c.json(note);
   };
 
@@ -64,13 +52,7 @@ export class NoteController {
     const user = c.var.user as AuthenticatedUserContextType;
     const { id } = c.var.validatedParams as EntityIdParamType;
     const success = await this.noteService.delete(id, user);
-
-    if (!success) {
-      throw new NotFoundHTTPException({
-        message: "Note not found",
-      });
-    }
-
+    if (!success) throw new NotFoundError();
     return c.json({ message: "Note deleted successfully" });
   };
 }
