@@ -3,8 +3,7 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import type { ZodTypeAny } from "zod";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { InternalServerHTTPException } from "@/errors/internal-server.error.ts";
-import { BadRequestHTTPException } from "@/errors/bad-request.error.ts";
+import { BadRequestError, InternalServerError } from "@/errors.ts";
 
 /**
  * Defines the possible sources from which data can be validated.
@@ -52,7 +51,7 @@ interface ValidationOptions {
  * ```
  */
 export const validate = (
-  options: ValidationOptions,
+  options: ValidationOptions
 ): MiddlewareHandler<AppEnv> => {
   const { schema, source, varKey } = options;
 
@@ -77,12 +76,15 @@ export const validate = (
         default:
           // Should not happen if types are correct
           console.warn(`ValidationMiddleware: Unknown data source "${source}"`);
-          throw new InternalServerHTTPException({
-            message: "Internal server error: Invalid validation configuration.",
-          });
+          throw new InternalServerError();
       }
     } catch (error) {
-      if (error instanceof HTTPException) throw error;
+      if (
+        error instanceof HTTPException ||
+        error instanceof InternalServerError
+      ) {
+        throw error;
+      }
       // Handle errors during data extraction (e.g., invalid JSON in body)
       let message = `Invalid request ${source}.`;
       if (error instanceof Error) {
@@ -90,7 +92,7 @@ export const validate = (
           ? "Invalid JSON in request body."
           : `Error reading request ${source}.`;
       }
-      throw new BadRequestHTTPException({ message });
+      throw new BadRequestError(message);
     }
 
     const result = schema.safeParse(dataToValidate);
@@ -100,10 +102,10 @@ export const validate = (
       const fieldErrorMessages = Object.entries(fieldErrors)
         .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
         .join("; ");
-      throw new BadRequestHTTPException({
-        message: `Validation failed for ${source}. ${fieldErrorMessages}`,
-        cause: result.error.flatten(),
-      });
+      throw new BadRequestError(
+        `Validation failed for ${source}. ${fieldErrorMessages}`,
+        { cause: result.error.flatten() }
+      );
     }
 
     c.set(varKey as keyof AppEnv["Variables"], result.data);
