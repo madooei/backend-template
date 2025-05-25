@@ -39,4 +39,10 @@ For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
 
 ## Imports
 
-Always use path aliases in import statements instead of relative paths. For example, `import { app } from "@/app.ts";`. In this example, `@/*` is mapped to `src/*`. All path aliases for import statements must be defined in both `tsconfig.json` and `tsup.config.ts`
+Always use path aliases in import statements instead of relative paths. 
+
+- For example, `import { app } from "@/app.ts";`. 
+- In this example, `@/*` is mapped to `src/*`. 
+- Make sure to include the file extension (`.ts`)
+
+All path aliases for import statements must be defined in both `tsconfig.json` and `tsup.config.ts`
