@@ -6,12 +6,12 @@ This is a template for a backend service built with TypeScript and Hono.js. It p
 
 The application follows a common layered architecture pattern, consisting of the following main layers:
 
-1.  **Model Layer (Schemas)**: Defines the structure and validation rules for data entities (e.g., `Note`, `UserContext`), DTOs (Data Transfer Objects), and query parameters.
-2.  **Data Access Layer (Repositories)**: Abstracts the interaction with the data store (e.g., MongoDB).
-3.  **Services Layer**: Contains the core business logic of the application.
-4.  **Controllers Layer**: Handles incoming HTTP requests and outgoing responses.
-5.  **Middlewares Layer**: Handles cross-cutting concerns that apply to multiple routes or requests.
-6.  **Routes Layer**: Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
+1. **Model Layer (Schemas)**: Defines the structure and validation rules for data entities (e.g., `Note`, `UserContext`), DTOs (Data Transfer Objects), and query parameters.
+2. **Data Access Layer (Repositories)**: Abstracts the interaction with the data store (e.g., MongoDB).
+3. **Services Layer**: Contains the core business logic of the application.
+4. **Controllers Layer**: Handles incoming HTTP requests and outgoing responses.
+5. **Middlewares Layer**: Handles cross-cutting concerns that apply to multiple routes or requests.
+6. **Routes Layer**: Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
 
 ## Technology Stack
 
@@ -46,7 +46,7 @@ The mock service will run at `http://localhost:3333`. Set this URL as your `AUTH
 
 For more information about authentication and authorization, see [docs/auth.md](docs/auth.md).
 
-### Using Docker (Recommended)
+### Using Docker for Development (Recommended)
 
 You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https://code.visualstudio.com/) installed on your machine. You also need to have the ["Remote - Containers" extension pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed in Visual Studio Code.
 
@@ -86,7 +86,7 @@ You can debug the application using the VS Code debugger. To do this, you need t
 
 ## Production Build
 
-### Using Docker (Recommended)
+### Using Docker for Production (Recommended)
 
 1. SSH into the production server.
 2. You must have `git` and `docker` installed on the production server.
@@ -128,6 +128,7 @@ We use [Vitest](https://vitest.dev/) for testing. All tests are in the `tests/` 
 - Run all tests: `pnpm test`
 - Run tests in watch mode: `pnpm test:watch`
 - Run tests with coverage: `pnpm test:coverage` (coverage is reported in the `coverage/` directory)
+  - To view the coverage report, open `coverage/index.html` in your browser.
 - Run specific test file: `pnpm test -- tests/controllers/note.controller.test.ts`
 
 For more information about testing, see [docs/testing.md](docs/testing.md).
