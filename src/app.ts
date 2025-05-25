@@ -4,7 +4,7 @@ import { NoteController } from "@/controllers/note-controller.ts";
 import { NoteService } from "@/services/note.service.ts";
 import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
 import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { globalErrorHandler } from "@/errors/global-error-handler.ts";
+import { globalErrorHandler } from "@/errors.ts";
 
 export const app = new Hono<AppEnv>();
 
@@ -15,7 +15,7 @@ app.get("/", (c) => {
 
 const noteService = new NoteService(new MockDbNoteRepository());
 const noteController = new NoteController(noteService);
-app.route("/notes", createNoteRoutes(noteController));
+app.route("/notes", createNoteRoutes({ noteController }));
 
 // Health check route
 app.get("/health", (c) => c.json({ status: "ok" }));
