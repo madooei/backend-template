@@ -51,7 +51,7 @@ interface ValidationOptions {
  * ```
  */
 export const validate = (
-  options: ValidationOptions
+  options: ValidationOptions,
 ): MiddlewareHandler<AppEnv> => {
   const { schema, source, varKey } = options;
 
@@ -104,7 +104,7 @@ export const validate = (
         .join("; ");
       throw new BadRequestError(
         `Validation failed for ${source}. ${fieldErrorMessages}`,
-        { cause: result.error.flatten() }
+        { cause: result.error.flatten() },
       );
     }
 

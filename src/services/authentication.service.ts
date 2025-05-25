@@ -5,13 +5,13 @@ import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
 
 export class AuthenticationService {
   public async authenticateUserByToken(
-    token: string
+    token: string,
   ): Promise<AuthenticatedUserContextType> {
     const authServiceUrl = env.AUTH_SERVICE_URL;
 
     if (!authServiceUrl) {
       throw new ServiceUnavailableError(
-        "User authentication service is not properly configured."
+        "User authentication service is not properly configured.",
       );
     }
 
@@ -29,7 +29,7 @@ export class AuthenticationService {
           throw new UnauthenticatedError("Invalid authentication token");
         } else {
           throw new ServiceUnavailableError(
-            `Authentication service error: ${response.status}`
+            `Authentication service error: ${response.status}`,
           );
         }
       }
@@ -41,7 +41,7 @@ export class AuthenticationService {
       if (!parsedUserData.success) {
         console.error(
           "Invalid user data format from auth service:",
-          parsedUserData.error.format()
+          parsedUserData.error.format(),
         );
         throw new UnauthenticatedError("Invalid user data format");
       }

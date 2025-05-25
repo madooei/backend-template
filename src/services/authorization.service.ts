@@ -10,7 +10,7 @@ export class AuthorizationService {
 
   async canViewNote(
     user: AuthenticatedUserContextType,
-    note: NoteType
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
     if (note.createdBy === user.userId) return true;
@@ -25,7 +25,7 @@ export class AuthorizationService {
 
   async canUpdateNote(
     user: AuthenticatedUserContextType,
-    note: NoteType
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
     if (note.createdBy === user.userId) return true;
@@ -34,7 +34,7 @@ export class AuthorizationService {
 
   async canDeleteNote(
     user: AuthenticatedUserContextType,
-    note: NoteType
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
     if (note.createdBy === user.userId) return true;

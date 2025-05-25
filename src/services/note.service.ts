@@ -17,7 +17,7 @@ export class NoteService {
 
   constructor(
     noteRepository?: INoteRepository,
-    authorizationService?: AuthorizationService
+    authorizationService?: AuthorizationService,
   ) {
     if (noteRepository) {
       this.noteRepository = noteRepository;
@@ -34,7 +34,7 @@ export class NoteService {
 
   async getAll(
     params: NoteQueryParamsType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<PaginatedResultType<NoteType>> {
     if (this.authorizationService.isAdmin(user)) {
       return this.noteRepository.findAll(params);
@@ -44,7 +44,7 @@ export class NoteService {
 
   async getById(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -59,7 +59,7 @@ export class NoteService {
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
     const canCreate = await this.authorizationService.canCreateNote(user);
     if (!canCreate) throw new UnauthorizedError();
@@ -70,7 +70,7 @@ export class NoteService {
   async update(
     id: string,
     data: UpdateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -85,7 +85,7 @@ export class NoteService {
 
   async delete(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<boolean> {
     const note = await this.noteRepository.findById(id);
     if (!note) {

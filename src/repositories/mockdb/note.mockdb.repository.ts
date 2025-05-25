@@ -19,21 +19,21 @@ export class MockDbNoteRepository implements INoteRepository {
 
   private applyQueryParams(
     notes: NoteType[],
-    params: NoteQueryParamsType
+    params: NoteQueryParamsType,
   ): PaginatedResultType<NoteType> {
     let filteredNotes = notes;
 
     const createdBy = params.createdBy;
     if (createdBy) {
       filteredNotes = filteredNotes.filter(
-        (note) => note.createdBy === createdBy
+        (note) => note.createdBy === createdBy,
       );
     }
 
     const searchTerm = params.search?.toLowerCase().trim();
     if (searchTerm) {
       filteredNotes = filteredNotes.filter((note) =>
-        note.content.toLowerCase().includes(searchTerm.toLowerCase())
+        note.content.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -72,7 +72,7 @@ export class MockDbNoteRepository implements INoteRepository {
   }
 
   async findAll(
-    params: NoteQueryParamsType
+    params: NoteQueryParamsType,
   ): Promise<PaginatedResultType<NoteType>> {
     return this.applyQueryParams(this.notes, params);
   }
@@ -84,7 +84,7 @@ export class MockDbNoteRepository implements INoteRepository {
 
   async findAllByIds(
     ids: NoteIdType[],
-    params: NoteQueryParamsType
+    params: NoteQueryParamsType,
   ): Promise<PaginatedResultType<NoteType>> {
     const filteredNotes = this.notes.filter((note) => ids.includes(note.id));
     return this.applyQueryParams(filteredNotes, params);
@@ -92,7 +92,7 @@ export class MockDbNoteRepository implements INoteRepository {
 
   async create(
     data: CreateNoteType,
-    createdByUserId: UserIdType
+    createdByUserId: UserIdType,
   ): Promise<NoteType> {
     const now = new Date();
     const newNote: NoteType = {

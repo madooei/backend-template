@@ -13,7 +13,7 @@ export interface INoteRepository {
   findById(id: NoteIdType): Promise<NoteType | null>;
   findAllByIds(
     ids: NoteIdType[],
-    params: NoteQueryParamsType
+    params: NoteQueryParamsType,
   ): Promise<PaginatedResultType<NoteType>>;
   create(data: CreateNoteType, createdByUserId: UserIdType): Promise<NoteType>;
   update(id: NoteIdType, data: UpdateNoteType): Promise<NoteType | null>;

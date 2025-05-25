@@ -53,7 +53,7 @@ export class BaseError extends Error {
 export class BadRequestError extends BaseError {
   constructor(
     message: string = "Bad Request",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 400 });
   }
@@ -62,7 +62,7 @@ export class BadRequestError extends BaseError {
 export class UnauthenticatedError extends BaseError {
   constructor(
     message: string = "Unauthenticated",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 401 });
   }
@@ -71,7 +71,7 @@ export class UnauthenticatedError extends BaseError {
 export class UnauthorizedError extends BaseError {
   constructor(
     message: string = "Unauthorized",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 403 });
   }
@@ -80,7 +80,7 @@ export class UnauthorizedError extends BaseError {
 export class NotFoundError extends BaseError {
   constructor(
     message: string = "Resource Not Found",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 404 });
   }
@@ -89,7 +89,7 @@ export class NotFoundError extends BaseError {
 export class InternalServerError extends BaseError {
   constructor(
     message: string = "Internal Server Error",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 500 });
   }
@@ -98,7 +98,7 @@ export class InternalServerError extends BaseError {
 export class ServiceUnavailableError extends BaseError {
   constructor(
     message: string = "Service Unavailable",
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     super(message, { ...options, errorCode: 503 });
   }
@@ -112,11 +112,11 @@ export class HttpError extends BaseError {
   constructor(
     statusCode: number,
     message: string,
-    options?: Omit<BaseErrorOptions, "errorCode">
+    options?: Omit<BaseErrorOptions, "errorCode">,
   ) {
     if (statusCode < 100 || statusCode > 599) {
       console.warn(
-        `HttpError created with non-standard HTTP status code: ${statusCode}`
+        `HttpError created with non-standard HTTP status code: ${statusCode}`,
       );
     }
     super(message, { ...options, errorCode: statusCode });
@@ -157,7 +157,7 @@ export const globalErrorHandler = (err: Error, c: Context<AppEnv>) => {
     // Fallback for any other unexpected errors
     const internalError = new InternalServerError(
       "An unexpected error occurred",
-      { cause: err }
+      { cause: err },
     );
     return createErrorResponse(c, internalError);
   }
