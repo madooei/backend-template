@@ -9,14 +9,27 @@ import type {
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
 import { AuthorizationService } from "@/services/authorization.service.ts";
 import { UnauthorizedError } from "@/errors.ts";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
 
 export class NoteService {
   private readonly noteRepository: INoteRepository;
   private readonly authorizationService: AuthorizationService;
 
-  constructor(noteRepository: INoteRepository) {
-    this.noteRepository = noteRepository;
-    this.authorizationService = new AuthorizationService(noteRepository);
+  constructor(
+    noteRepository?: INoteRepository,
+    authorizationService?: AuthorizationService
+  ) {
+    if (noteRepository) {
+      this.noteRepository = noteRepository;
+    } else {
+      this.noteRepository = new MockDbNoteRepository();
+    }
+
+    if (authorizationService) {
+      this.authorizationService = authorizationService;
+    } else {
+      this.authorizationService = new AuthorizationService();
+    }
   }
 
   async getAll(
