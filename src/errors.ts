@@ -1,7 +1,7 @@
 import type { Context } from "hono";
-import type { StatusCode } from "hono/utils/http-status";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { HTTPException } from "hono/http-exception";
+import type { AppEnv } from "@/schemas/app-env.schema.ts";
 
 export type ErrorCode = string | number;
 
@@ -141,7 +141,7 @@ export function createErrorResponse(c: Context, error: BaseError): Response {
   // If errorCode is a string, it's included in the body by toJSON().
   // The HTTP status code will be the default (500) or determined by other logic if needed.
 
-  return c.json(errorBody, statusCode as any);
+  return c.json(errorBody, statusCode as ContentfulStatusCode);
 }
 
 export const globalErrorHandler = (err: Error, c: Context<AppEnv>) => {
