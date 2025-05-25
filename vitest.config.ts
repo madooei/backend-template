@@ -9,7 +9,13 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       all: true,
       include: ["src/**/*.ts"],
-      exclude: ["**/*.test.ts", "**/coverage/**", "**/node_modules/**"],
+      exclude: [
+        "**/*.test.ts",
+        "**/coverage/**",
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/scripts/**",
+      ],
     },
   },
   resolve: {

@@ -6,7 +6,7 @@
   "author": "Ali Madooei",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch scripts/mock-auth-server.ts & tsx watch src/server.ts",
     "build": "tsup",
     "start": "node dist/server.js",
     "lint": "eslint",
@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
     "clean": "rm -rf dist coverage",
     "clean:all": "rm -rf dist coverage node_modules"
   },
