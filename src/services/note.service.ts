@@ -8,7 +8,7 @@ import type {
 } from "@/schemas/note.schema.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
 import { AuthorizationService } from "@/services/authorization.service.ts";
-import { UnauthenticatedError } from "@/errors/unauthenticated.error.ts";
+import { UnauthorizedError } from "@/errors.ts";
 
 export class NoteService {
   private readonly noteRepository: INoteRepository;
@@ -39,9 +39,7 @@ export class NoteService {
     }
 
     const canView = await this.authorizationService.canViewNote(user, note);
-    if (!canView) {
-      throw new UnauthenticatedError("Unauthorized to view note");
-    }
+    if (!canView) throw new UnauthorizedError();
 
     return note;
   }
@@ -51,9 +49,7 @@ export class NoteService {
     user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
     const canCreate = await this.authorizationService.canCreateNote(user);
-    if (!canCreate) {
-      throw new UnauthenticatedError("Unauthorized to create note");
-    }
+    if (!canCreate) throw new UnauthorizedError();
 
     return this.noteRepository.create(data, user.userId);
   }
@@ -69,9 +65,7 @@ export class NoteService {
     }
 
     const canUpdate = await this.authorizationService.canUpdateNote(user, note);
-    if (!canUpdate) {
-      throw new UnauthenticatedError("Unauthorized to update note");
-    }
+    if (!canUpdate) throw new UnauthorizedError();
 
     return this.noteRepository.update(id, data);
   }
@@ -86,9 +80,7 @@ export class NoteService {
     }
 
     const canDelete = await this.authorizationService.canDeleteNote(user, note);
-    if (!canDelete) {
-      throw new UnauthenticatedError("Unauthorized to delete note");
-    }
+    if (!canDelete) throw new UnauthorizedError();
 
     return this.noteRepository.delete(id);
   }
