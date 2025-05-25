@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { NoteService } from "@/services/note.service.ts";
+import { NoteService } from "@/services/note.service.ts";
 import type { EntityIdParamType } from "@/schemas/shared.schema.ts";
 import type {
   CreateNoteType,
@@ -13,8 +13,12 @@ import { NotFoundError } from "@/errors.ts";
 export class NoteController {
   private noteService: NoteService;
 
-  constructor(noteService: NoteService) {
-    this.noteService = noteService;
+  constructor(noteService?: NoteService) {
+    if (noteService) {
+      this.noteService = noteService;
+    } else {
+      this.noteService = new NoteService();
+    }
   }
 
   getAll = async (c: Context<AppEnv>): Promise<Response> => {
