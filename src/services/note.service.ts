@@ -33,18 +33,25 @@ export class NoteService {
     id: string,
     user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
-    if (!(await this.authorizationService.canViewNote(user, id))) {
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return null;
+    }
+
+    const canView = await this.authorizationService.canViewNote(user, note);
+    if (!canView) {
       throw new UnauthenticatedError("Unauthorized to view note");
     }
 
-    return this.noteRepository.findById(id);
+    return note;
   }
 
   async create(
     data: CreateNoteType,
     user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
-    if (!(await this.authorizationService.canCreateNote(user))) {
+    const canCreate = await this.authorizationService.canCreateNote(user);
+    if (!canCreate) {
       throw new UnauthenticatedError("Unauthorized to create note");
     }
 
@@ -56,7 +63,13 @@ export class NoteService {
     data: UpdateNoteType,
     user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
-    if (!(await this.authorizationService.canUpdateNote(user, id))) {
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return null;
+    }
+
+    const canUpdate = await this.authorizationService.canUpdateNote(user, note);
+    if (!canUpdate) {
       throw new UnauthenticatedError("Unauthorized to update note");
     }
 
@@ -67,7 +80,13 @@ export class NoteService {
     id: string,
     user: AuthenticatedUserContextType,
   ): Promise<boolean> {
-    if (!(await this.authorizationService.canDeleteNote(user, id))) {
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return false;
+    }
+
+    const canDelete = await this.authorizationService.canDeleteNote(user, note);
+    if (!canDelete) {
       throw new UnauthenticatedError("Unauthorized to delete note");
     }
 
