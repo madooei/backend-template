@@ -3,6 +3,8 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Guidelines for Defining Schemas and Types
+
 All types and schemas must be defined in `src/schemas` directory, following `entity-name.schema.ts` pattern. Each type must be defined using Zod schema and the typescript type must be infered from the Zod schema. We should export both the schema and the type. For example:
 
 ```ts

@@ -17,5 +17,5 @@ export interface INoteRepository {
   ): Promise<PaginatedResultType<NoteType>>;
   create(data: CreateNoteType, createdByUserId: UserIdType): Promise<NoteType>;
   update(id: NoteIdType, data: UpdateNoteType): Promise<NoteType | null>;
-  delete(id: NoteIdType): Promise<boolean>;
+  remove(id: NoteIdType): Promise<boolean>;
 }

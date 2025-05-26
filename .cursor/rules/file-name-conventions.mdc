@@ -3,6 +3,32 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Guidelines on Naming Files and Folder Structure
+
+## Directories
+
+Here is a overview of the folder structure of this codebase:
+
+```plaintext
+.
+├── dist
+├── docker
+├── docs
+├── scripts
+├── src
+│   ├── controllers
+│   ├── errors
+│   ├── middlewares
+│   ├── repositories
+│   │   └── mockdb
+│   ├── routes
+│   ├── schemas
+│   └── services
+└── tests
+```
+
+## Files
+
 Files should follow this naming pattern to maintain consistency and readability across the project: `entity-name.type.ts`
 
 - **`entity-name`**: The name of the primary entity or feature. For multiple words, use **kebab-case** (e.g., `course-registration`, `user-profile`).
@@ -10,3 +36,13 @@ Files should follow this naming pattern to maintain consistency and readability 
 - **`type`**: A suffix showing the file's role. Common types include `controller`, `service`, `repository`, `schema`, `middleware`, etc. Files of the same type should be stored together—for example, all `.schema.ts` files go in the `src/schema/` directory.
 
 For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
+
+## Imports
+
+Always use path aliases in import statements instead of relative paths. 
+
+- For example, `import { app } from "@/app.ts";`. 
+- In this example, `@/*` is mapped to `src/*`. 
+- Make sure to include the file extension (`.ts`)
+
+All path aliases for import statements must be defined in both `tsconfig.json` and `tsup.config.ts`

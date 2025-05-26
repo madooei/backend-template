@@ -6,13 +6,19 @@
   "author": "Ali Madooei",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch scripts/mock-auth-server.ts & tsx watch src/server.ts",
     "build": "tsup",
     "start": "node dist/server.js",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist coverage",
+    "clean:all": "rm -rf dist coverage node_modules"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.2",
@@ -24,6 +30,8 @@
   "devDependencies": {
     "@eslint/js": "^9.27.0",
     "@types/node": "^20.11.17",
+    "@vitest/coverage-v8": "^3.1.4",
+    "@vitest/ui": "^3.1.4",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
@@ -33,6 +41,7 @@
     "tsup": "^8.5.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1"
+    "typescript-eslint": "^8.32.1",
+    "vitest": "^3.1.4"
   }
 }

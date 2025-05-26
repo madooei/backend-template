@@ -6,9 +6,7 @@
 !.vscode/*.code-snippets
 !.vscode/extensions.json
 !.vscode/settings.json
-.idea/workspace.xml
-.idea/usage.statistics.xml
-.idea/shelf
+.idea/
 
 # deps
 node_modules/
@@ -32,3 +30,6 @@ lerna-debug.log*
 
 # Build artifacts
 dist
+
+# Test Coverage
+coverage

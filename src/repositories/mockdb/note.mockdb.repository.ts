@@ -121,7 +121,7 @@ export class MockDbNoteRepository implements INoteRepository {
     return updatedNote;
   }
 
-  async delete(id: NoteIdType): Promise<boolean> {
+  async remove(id: NoteIdType): Promise<boolean> {
     const initialLength = this.notes.length;
     this.notes = this.notes.filter((n) => n.id !== id);
     return this.notes.length < initialLength;

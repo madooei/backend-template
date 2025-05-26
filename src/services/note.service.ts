@@ -8,20 +8,33 @@ import type {
 } from "@/schemas/note.schema.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
 import { AuthorizationService } from "@/services/authorization.service.ts";
-import { UnauthenticatedError } from "@/errors/unauthenticated.error.ts";
+import { UnauthorizedError } from "@/errors.ts";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
 
 export class NoteService {
   private readonly noteRepository: INoteRepository;
   private readonly authorizationService: AuthorizationService;
 
-  constructor(noteRepository: INoteRepository) {
-    this.noteRepository = noteRepository;
-    this.authorizationService = new AuthorizationService(noteRepository);
+  constructor(
+    noteRepository?: INoteRepository,
+    authorizationService?: AuthorizationService,
+  ) {
+    if (noteRepository) {
+      this.noteRepository = noteRepository;
+    } else {
+      this.noteRepository = new MockDbNoteRepository();
+    }
+
+    if (authorizationService) {
+      this.authorizationService = authorizationService;
+    } else {
+      this.authorizationService = new AuthorizationService();
+    }
   }
 
   async getAll(
     params: NoteQueryParamsType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<PaginatedResultType<NoteType>> {
     if (this.authorizationService.isAdmin(user)) {
       return this.noteRepository.findAll(params);
@@ -31,22 +44,25 @@ export class NoteService {
 
   async getById(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
-    if (!(await this.authorizationService.canViewNote(user, id))) {
-      throw new UnauthenticatedError("Unauthorized to view note");
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return null;
     }
 
-    return this.noteRepository.findById(id);
+    const canView = await this.authorizationService.canViewNote(user, note);
+    if (!canView) throw new UnauthorizedError();
+
+    return note;
   }
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
-    if (!(await this.authorizationService.canCreateNote(user))) {
-      throw new UnauthenticatedError("Unauthorized to create note");
-    }
+    const canCreate = await this.authorizationService.canCreateNote(user);
+    if (!canCreate) throw new UnauthorizedError();
 
     return this.noteRepository.create(data, user.userId);
   }
@@ -54,23 +70,31 @@ export class NoteService {
   async update(
     id: string,
     data: UpdateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
-    if (!(await this.authorizationService.canUpdateNote(user, id))) {
-      throw new UnauthenticatedError("Unauthorized to update note");
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return null;
     }
+
+    const canUpdate = await this.authorizationService.canUpdateNote(user, note);
+    if (!canUpdate) throw new UnauthorizedError();
 
     return this.noteRepository.update(id, data);
   }
 
   async delete(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<boolean> {
-    if (!(await this.authorizationService.canDeleteNote(user, id))) {
-      throw new UnauthenticatedError("Unauthorized to delete note");
+    const note = await this.noteRepository.findById(id);
+    if (!note) {
+      return false;
     }
 
-    return this.noteRepository.delete(id);
+    const canDelete = await this.authorizationService.canDeleteNote(user, note);
+    if (!canDelete) throw new UnauthorizedError();
+
+    return this.noteRepository.remove(id);
   }
 }

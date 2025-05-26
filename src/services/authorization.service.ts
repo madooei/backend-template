@@ -1,13 +1,7 @@
-import type { INoteRepository } from "@/repositories/note.repository.ts";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import type { NoteType } from "@/schemas/note.schema.ts";
 
 export class AuthorizationService {
-  private noteRepository: INoteRepository;
-
-  constructor(noteRepository: INoteRepository) {
-    this.noteRepository = noteRepository;
-  }
-
   isAdmin(user: AuthenticatedUserContextType): boolean {
     return user.globalRole === "admin";
   }
@@ -16,14 +10,10 @@ export class AuthorizationService {
 
   async canViewNote(
     user: AuthenticatedUserContextType,
-    noteId: string,
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
-
-    const note = await this.noteRepository.findById(noteId);
-    if (!note) return false;
     if (note.createdBy === user.userId) return true;
-
     return false;
   }
 
@@ -35,29 +25,19 @@ export class AuthorizationService {
 
   async canUpdateNote(
     user: AuthenticatedUserContextType,
-    noteId: string,
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
-
-    const note = await this.noteRepository.findById(noteId);
-    if (!note) return false;
-
     if (note.createdBy === user.userId) return true;
-
     return false;
   }
 
   async canDeleteNote(
     user: AuthenticatedUserContextType,
-    noteId: string,
+    note: NoteType,
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
-
-    const note = await this.noteRepository.findById(noteId);
-    if (!note) return false;
-
     if (note.createdBy === user.userId) return true;
-
     return false;
   }
 
