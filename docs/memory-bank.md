@@ -24,18 +24,21 @@ flowchart TD
 Located in `docs/memory-bank/`:
 
 1. `01-project-brief.md`
+
    - Foundation document that shapes all other files
    - Created at project start if it doesn't exist
    - Defines core requirements and goals
    - Source of truth for project scope
 
 2. `02-product-context.md`
+
    - Why this project exists
    - Problems it solves
    - How it should work
    - User experience goals
 
 3. `03-system-patterns.md`
+
    - System architecture and 6-layer pattern
    - Key technical decisions and implementation patterns
    - Design patterns in use, testing strategies
@@ -43,11 +46,13 @@ Located in `docs/memory-bank/`:
    - Critical implementation paths and development workflows
 
 4. `04-tech-context.md`
+
    - Technologies used and development setup
    - Technical constraints and dependencies
    - Tool usage patterns and build processes
 
 5. `05-active-context.md`
+
    - Current work focus and recent changes
    - Next steps and active decisions
    - Important patterns and preferences
@@ -109,8 +114,7 @@ Memory Bank updates occur when:
 
 1. Discovering new project patterns
 2. After implementing significant changes
-3. When user requests with **update memory bank** (MUST review ALL files)
-4. When context needs clarification
+3. When context needs clarification
 
    ```mermaid
    flowchart TD
@@ -128,6 +132,5 @@ Memory Bank updates occur when:
       Start --> Process
    ```
 
-Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on activeContext.md and progress.md as they track current state.
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+> [!NOTE]
+> A slightly edited version of this document is provided as guideline to Cline.bot (through the `.clinerules` file) and to Cursor (through the `.cursor/rules/memory.mdc` file) to help them understand how to use the Memory Bank effectively. The AI agents will follow these guidelines when interacting with the Memory Bank, ensuring they maintain context and provide accurate responses based on the project's knowledge base.

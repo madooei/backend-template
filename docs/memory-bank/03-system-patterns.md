@@ -301,18 +301,21 @@ We follow a layered testing approach that aligns with our application architectu
 #### Testing Best Practices
 
 1. **Test Organization**
+
    - Use descriptive test names that explain the behavior being tested
    - Group related tests using `describe` blocks
    - Use `beforeEach` and `afterEach` hooks for setup and cleanup
    - Keep tests focused and atomic
 
 2. **Mocking**
+
    - Use Vitest's mocking capabilities to isolate layers
    - Create mock implementations of interfaces rather than concrete classes
    - Use `vi.mock()` for module-level mocking
    - Consider creating shared mock factories for common dependencies
 
 3. **Test Data**
+
    - Use factory functions to create test data
    - Keep test data close to the tests that use it
    - Consider using a test database for repository tests
