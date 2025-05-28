@@ -44,7 +44,7 @@ npx tsx scripts/mock-auth-server.ts
 
 The mock service will run at `http://localhost:3333`. Set this URL as your `AUTH_SERVICE_URL` environment variable in the `.env` file.
 
-For more information about authentication and authorization, see [docs/auth.md](docs/auth.md).
+For more information about authentication and authorization, see [docs/memory-bank/03-system-patterns.md](docs/memory-bank/03-system-patterns.md).
 
 ### Using Docker for Development (Recommended)
 
@@ -60,7 +60,7 @@ You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https:
 8. To stop the container, you can either close Visual Studio Code or run `docker-compose down` in the terminal. This will stop and remove the container. All changes to the code are persisted thanks to the volume mapping in the `docker-compose.yml` file.
 
 > [!TIP]
-> To learn more about how I have configured the development container, refer to the [docs/docker.md](docs/docker.md) file.
+> To learn more about how I have configured the development container, refer to the [docs/guides/docker.md](docs/guides/docker.md) file.
 
 ### Using Node.js
 
@@ -82,7 +82,7 @@ You can debug the application using the VS Code debugger. To do this, you need t
 3. The debugger will stop at the breakpoint.
 
 > [!NOTE]
-> To learn more about how I have configured the VS Code debugger, refer to the [docs/vscode.md](docs/vscode.md) file.
+> To learn more about how I have configured the VS Code debugger, refer to the [docs/guides/vscode.md](docs/guides/vscode.md) file.
 
 ## Production Build
 
@@ -131,7 +131,7 @@ We use [Vitest](https://vitest.dev/) for testing. All tests are in the `tests/` 
   - To view the coverage report, open `coverage/index.html` in your browser.
 - Run specific test file: `pnpm test -- tests/controllers/note.controller.test.ts`
 
-For more information about testing, see [docs/testing.md](docs/testing.md).
+For more information about testing, see [docs/memory-bank/03-system-patterns.md](docs/memory-bank/03-system-patterns.md).
 
 ## Scripts
 

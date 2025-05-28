@@ -1,76 +1,80 @@
 # Memory Bank
 
-The memory back is the central repository for all project knowledge, serving as a source of information for AI code assistants (and human developers) to understand the project context, requirements, and progress. It is designed to be comprehensive and up-to-date, ensuring that I can effectively continue development without losing context or information
+The memory bank is the central repository for all project knowledge, serving as a source of information for AI code assistants (and human developers) to understand the project context, requirements, and progress. It is designed to be comprehensive and up-to-date, ensuring that AI agents can effectively continue development without losing context or information.
 
 ## Memory Bank Structure
 
-The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
+The Memory Bank consists of core files organized in a numbered sequence, all in Markdown format. Files build upon each other in a clear hierarchy:
 
 ```mermaid
 flowchart TD
-    PB[projectbrief.md] --> PC[productContext.md]
-    PB --> SP[systemPatterns.md]
-    PB --> TC[techContext.md]
+    PB[01-project-brief.md] --> PC[02-product-context.md]
+    PB --> SP[03-system-patterns.md]
+    PB --> TC[04-tech-context.md]
 
-    PC --> AC[activeContext.md]
+    PC --> AC[05-active-context.md]
     SP --> AC
     TC --> AC
 
-    AC --> P[progress.md]
+    AC --> P[06-progress.md]
 ```
 
 ### Core Files (Required)
 
-1. `projectbrief.md`
+Located in `docs/memory-bank/`:
+
+1. `01-project-brief.md`
    - Foundation document that shapes all other files
    - Created at project start if it doesn't exist
    - Defines core requirements and goals
    - Source of truth for project scope
 
-2. `productContext.md`
+2. `02-product-context.md`
    - Why this project exists
    - Problems it solves
    - How it should work
    - User experience goals
 
-3. `activeContext.md`
-   - Current work focus
-   - Recent changes
-   - Next steps
-   - Active decisions and considerations
+3. `03-system-patterns.md`
+   - System architecture and 6-layer pattern
+   - Key technical decisions and implementation patterns
+   - Design patterns in use, testing strategies
+   - Component relationships and file naming conventions
+   - Critical implementation paths and development workflows
+
+4. `04-tech-context.md`
+   - Technologies used and development setup
+   - Technical constraints and dependencies
+   - Tool usage patterns and build processes
+
+5. `05-active-context.md`
+   - Current work focus and recent changes
+   - Next steps and active decisions
    - Important patterns and preferences
    - Learnings and project insights
 
-4. `systemPatterns.md`
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
-   - Critical implementation paths
-
-5. `techContext.md`
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
-   - Tool usage patterns
-
-6. `progress.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
+6. `06-progress.md`
+   - What works and what's left to build
+   - Current status and known issues
    - Evolution of project decisions
 
 ### Additional Context
+
+#### Student-Focused Guides
+
+Located in `docs/guides/`. For example:
+
+- `docker.md` - Detailed Docker explanation for students learning containerization
+- `vscode.md` - VS Code setup and debugging configuration for students
+
+#### Future Extensions
 
 Create additional files/folders within memory-bank/ when they help organize:
 
 - Complex feature documentation
 - Integration specifications
 - API documentation
-- Testing strategies
-- Deployment procedures
+- Advanced deployment procedures
 
 ## Core Workflows
 
