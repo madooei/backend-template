@@ -2,6 +2,130 @@
 
 We use [Vitest](https://vitest.dev/) for testing. All tests are in the `tests/` directory. This folder should replicate the `src/` folder structure. We aim to test the code at each layer of the application in isolation, by mocking dependencies.
 
+## Testing Strategy
+
+We follow a layered testing approach that aligns with our application architecture. Each layer should be tested in isolation by mocking its dependencies. This ensures that tests are focused, fast, and reliable.
+
+### 1. Middleware Tests (`tests/middlewares/`)
+
+- Test authentication, error handling, and other middleware functions in isolation
+- Mock the request context and next function
+- Verify middleware behavior for both successful and error cases
+- Example: Test `auth.middleware.ts` middleware by mocking the `AuthenticationService`
+
+### 2. Route Tests (`tests/routes/`)
+
+- Focus on route configuration and middleware application
+- Verify correct HTTP methods are mapped to controller methods
+- Test route parameter validation
+- Ensure proper middleware chaining
+- Example: Test that `/notes/:id` routes are properly configured with authentication middleware
+
+### 3. Controller Tests (`tests/controllers/`)
+
+- Mock the service layer dependencies
+- Test request parsing and response formatting
+- Verify correct status codes and response structures
+- Test error handling and edge cases
+- Example: Test `NoteController` by mocking `NoteService`
+
+### 4. Service Tests (`tests/services/`)
+
+- Mock repository layer dependencies (use MockDB implementation)
+- Test business logic in isolation
+- Verify complex validations and data transformations
+- Test service orchestration of multiple repository calls
+- Example: Test `NoteService` by mocking `NoteRepository` (through `note.mockdb.repository.ts`)
+
+### 5. Repository Tests (`tests/data/`)
+
+- Use a test database or in-memory database
+- Test database operations and queries
+- Verify data mapping between domain models and database structures
+- Test error handling for database operations
+- Example: Test `NoteRepository` with a test MongoDB instance or in-memory mock database
+
+### 6. Schema/Model Tests (`tests/schemas/`)
+
+- Test Zod schema validations
+- Verify type inference works correctly
+- Test custom validation rules
+- Example: Test `NoteSchema` validation rules
+
+## Best Practices
+
+1. **Test Organization**
+
+   - Use descriptive test names that explain the behavior being tested
+   - Group related tests using `describe` blocks
+   - Use `beforeEach` and `afterEach` hooks for setup and cleanup
+   - Keep tests focused and atomic
+
+2. **Mocking**
+
+   - Use Vitest's mocking capabilities to isolate layers
+   - Create mock implementations of interfaces rather than concrete classes
+   - Use `vi.mock()` for module-level mocking
+   - Consider creating shared mock factories for common dependencies
+
+3. **Test Data**
+
+   - Use factory functions to create test data
+   - Keep test data close to the tests that use it
+   - Consider using a test database for repository tests
+   - Clean up test data after each test
+
+4. **Assertions**
+   - Use specific assertions that test behavior, not implementation
+   - Verify both happy paths and error cases
+   - Test edge cases and boundary conditions
+   - Use snapshot testing sparingly and only for complex objects
+
+## Example Test Structure
+
+```typescript
+// tests/controllers/course.controller.test.ts
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { CourseController } from "@/controllers/course.controller.ts";
+import { CourseService } from "@/services/course.service.ts";
+
+describe("CourseController", () => {
+  let controller: CourseController;
+  let mockCourseService: vi.Mocked<CourseService>;
+
+  beforeEach(() => {
+    mockCourseService = {
+      getCourse: vi.fn(),
+      // ... other methods
+    };
+    controller = new CourseController(mockCourseService);
+  });
+
+  describe("getCourse", () => {
+    it("should return course when found", async () => {
+      // Arrange
+      const mockCourse = { id: "1", title: "Test Course" };
+      mockCourseService.getCourse.mockResolvedValue(mockCourse);
+
+      // Act
+      const result = await controller.getCourse("1");
+
+      // Assert
+      expect(result).toEqual(mockCourse);
+      expect(mockCourseService.getCourse).toHaveBeenCalledWith("1");
+    });
+
+    it("should throw error when course not found", async () => {
+      // Arrange
+      mockCourseService.getCourse.mockRejectedValue(new Error("Not found"));
+
+      // Act & Assert
+      await expect(controller.getCourse("1")).rejects.toThrow("Not found");
+    });
+  });
+});
+```
+
 ## Coverage Requirements
 
 - Aim for at least 90% code coverage
@@ -16,6 +140,15 @@ This is cheat sheet is copied from <https://github.com/sapegin/vitest-cheat-shee
 ## Table of contents
 
 - [Testing](#testing)
+  - [Testing Strategy](#testing-strategy)
+    - [1. Middleware Tests (`tests/middlewares/`)](#1-middleware-tests-testsmiddlewares)
+    - [2. Route Tests (`tests/routes/`)](#2-route-tests-testsroutes)
+    - [3. Controller Tests (`tests/controllers/`)](#3-controller-tests-testscontrollers)
+    - [4. Service Tests (`tests/services/`)](#4-service-tests-testsservices)
+    - [5. Repository Tests (`tests/data/`)](#5-repository-tests-testsdata)
+    - [6. Schema/Model Tests (`tests/schemas/`)](#6-schemamodel-tests-testsschemas)
+  - [Best Practices](#best-practices)
+  - [Example Test Structure](#example-test-structure)
   - [Coverage Requirements](#coverage-requirements)
   - [Vitest cheat sheet](#vitest-cheat-sheet)
   - [Table of contents](#table-of-contents)

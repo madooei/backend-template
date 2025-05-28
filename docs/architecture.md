@@ -6,77 +6,126 @@ This document outlines the layered architecture of this application. The archite
 
 The application follows a common layered architecture pattern, consisting of the following main layers:
 
-1.  **Model Layer (Zod Schemas & TypeScript Types):** Defines the structure, validation, and types for data entities.
-2.  **Data Access Layer (Interfaces and Implementations following the Repository Pattern):** Abstracts the interaction with the data store (e.g., MongoDB).
-3.  **Services Layer:** Contains the core business logic of the application.
-4.  **Controllers Layer:** Handles incoming HTTP requests and outgoing responses.
-5.  **Middlewares Layer:** Handles cross-cutting concerns that apply to multiple routes or requests.
-6.  **Routes Layer:** Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
+1. **Model Layer (Zod Schemas & TypeScript Types):** Defines the structure, validation, and types for data entities.
+2. **Data Access Layer (Interfaces and Implementations following the Repository Pattern):** Abstracts the interaction with the data store (e.g., MongoDB).
+3. **Services Layer:** Contains the core business logic of the application.
+4. **Controllers Layer:** Handles incoming HTTP requests and outgoing responses.
+5. **Middlewares Layer:** Handles cross-cutting concerns that apply to multiple routes or requests.
+6. **Routes Layer:** Defines the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
 
 ## Layer Details
 
-### 1. Model Layer (Schemas)
+When implementing new features or updating existing ones, respect the following layers and their boundaries.
 
-- **Location:** `src/schemas/` (e.g., `src/schemas/note.schema.ts`)
-- **Responsibility:**
-  - Define the structure and validation rules for data entities (e.g., `Note`, `UserContext`), DTOs (Data Transfer Objects), and query parameters.
-  - Utilize Zod for schema definition, which provides both runtime validation and static TypeScript types via `z.infer<typeof schemaName>`.
-  - Ensure data integrity and consistency throughout the application.
-  - Domain entities are defined with database-agnostic types (e.g., `id: string`).
+### The Model Layer (Zod Schemas & TypeScript Types)
 
-### 2. Data Access Layer (Repositories)
+- **Location:** `src/schemas/`
+- **Primary Role:** Defines the canonical shape and validation rules for all data structures within the application.
+- **Responsibilities:**
+  - Define Zod schemas for core domain entities (e.g., `Note`).
+  - Define Data Transfer Object (DTO) schemas for request/response bodies (e.g., `CreateNote`, `UpdateNote`).
+  - Define schemas for query parameters (e.g., `NoteQueryParams`).
+  - Serve as the single source of truth for data validation logic (including type coercion, required fields, enums, and string formats).
+  - Enable automatic TypeScript type inference from schemas (`z.infer<typeof schemaName>`).
+- **Used By:** All other layers (Controllers, Services, Repositories) for data consistency and validation.
+- **Key Principle:** If it concerns data structure, type, or basic validation rules, it belongs here.
 
-- **Location:** `src/repositories/` (e.g., `src/repositories/note.repository.ts`)
-- **Responsibility:**
-  - Abstract data persistence and retrieval logic.
-  - Provide a clean API (interfaces) for CRUD (Create, Read, Update, Delete) operations and other data queries for specific entities.
-  - Implementations of these interfaces handle the specific database interactions (e.g., using a MongoDB driver).
-  - Ensure that the rest of the application (primarily services) is independent of the chosen database technology. Domain models use simple `id: string`, and repositories handle the mapping to/from database-specific ID formats (like MongoDB's `ObjectId`).
+### The Data Access Layer (Interfaces and Implementations following the Repository Pattern)
 
-### 3. Services Layer
+- **Location:** `src/repositories/`
+- **Primary Role:** Abstracts all database interactions, providing a clean API for the Service layer to handle data persistence and retrieval.
+- **Responsibilities (Repository Interfaces - `src/repositories/`):**
+  1. Define the contract (methods, parameters, return types) for data operations on a specific entity (e.g., `INoteRepository`).
+  2. Use domain model types (from `src/schemas/`) in their method signatures.
+- **Responsibilities (Repository Implementations - e.g., `src/repositories/mockdb/`, `src/repositories/mongodb/`):**
+  1. Implement the corresponding repository interface using a specific database technology (e.g., `MockDbNoteRepository`, `MongoDbNoteRepository`).
+  2. Contain all database-specific query logic and connection handling (via an injected DB instance or manager like `MongoDbDatabase`).
+  3. **Data Mapping:** Map data between the database-specific format (e.g., MongoDB documents with `_id: ObjectId`) and the application's domain models (e.g., `Note` with `id: string`).
+  4. **Validate Data Read from DB:** When mapping data _from_ the database _to_ a domain model (e.g., with a `mapDocumentToEntity` function), use the Zod schema's `.parse()` method. This ensures data integrity and protects against schema drift or database corruption.
+  5. **Always Implement Mocks:** Implement an in-memory version of each repository interface as a mock database in `src/repositories/mockdb/`.
+- **Does NOT Do:**
+  - Contain business logic or business rule validation (this belongs in Services).
+  - Perform authorization checks (this belongs in Services).
+  - Validate the shape/type of DTOs or domain objects passed _to it_ by the Service layer. The repository assumes that data has been validated by higher layers according to business rules.
+- **Key Principle:** Repositories act as data access gateways, isolating database concerns and ensuring data conformity to defined models.
 
-- **Location:** `src/services/` (e.g., `src/services/note.service.ts`)
-- **Responsibility:**
-  - Implement the core business logic and use cases of the application.
-  - Orchestrate operations by interacting with one or more repositories from the Data Access Layer.
-  - Perform data transformations and complex validations that are beyond simple schema checks.
-  - Decoupled from the specifics of the HTTP layer (controllers) and the database (repositories).
+### The Service Layer
 
-### 4. Controllers Layer
+- **Location:** `src/services/`
+- **Primary Role:** Encapsulates business logic, orchestrates data operations, and enforces application rules.
+- **Responsibilities:**
+  1. **Business Logic Implementation:** Contains core logic for all use cases and operations (e.g., creating notes, accepting share invites).
+  2. **Basic Authentication:** Performs basic authentication to validate a Beare token and exchange it for user information. An `AuthenticationService` centralizes this logic for other services.
+  3. **Fine-Grained Authorization:** Performs permission checks using user information and resource-specific data. This includes checking ownership and roles (e.g., teacher vs. student). An `AuthorizationService` centralizes this logic for other services.
+  4. **Business Rule Validation:** Enforces complex validation rules beyond basic data validation (e.g., email uniqueness, verification code expiration, course capacity checks).
+  5. **Data Orchestration & Integrity:** Uses repository interfaces to fetch and persist data. Manages operations requiring multiple data sources (e.g., verifying `userId` and `courseId` before creating a `Membership`).
+  6. **External Service Integration:** Manages external API calls through dedicated client modules (e.g., syncing rosters with Canvas LMS).
+  7. **Transaction Management:** Handles atomic operations across multiple database writes when native database support isn't available.
+  8. **Return Values:** Returns domain objects from `src/schemas/` or business errors that controllers map to HTTP responses.
+- **Service-to-Service Communication:**
+  - Allowed when completing user-initiated operations that require multiple services.
+  - The calling service passes user object to the called service.
+  - Called services perform task-specific authorization without repeating top-level permission checks.
+- **Key Principle:** Services act as the application's brain, managing business rules, validations, data access, and integrations.
 
-- **Location:** `src/controllers/` (e.g., `src/controllers/note-controller.ts`)
-- **Responsibility:**
-  - Receive HTTP requests from clients.
-  - Parse request parameters, body, and headers (can delegate to middlewares).
-  - Perform initial input validation (leveraging Zod schemas; can delegate to middlewares).
-  - Call appropriate methods in the Services Layer to perform business operations.
-  - Format and send HTTP responses (data, status codes, error messages; can delegate to middlewares).
-- **Framework:** Hono.js is used for routing and request/response handling.
+### The Controller Layer
 
-### 5. Middlewares
+- **Location:** `src/controllers/`
+- **Primary Role:** Serves as the interface between HTTP requests/responses and the application's business logic (Service Layer).
+- **Responsibilities:**
+  1. **HTTP Interaction:** Parses incoming HTTP requests (path parameters, query strings, request bodies).
+  2. **Request Validation:** Uses dedicated validation middleware (`src/middlewares/validation.ts`) configured in `src/app.ts` with Zod DTOs/schemas from `src/schemas/`. This middleware validates incoming request data structure and types. Failed validation triggers an `HTTPException` (typically 400) before reaching the controller. Controllers access pre-validated data through `c.var` (e.g., `c.var.validatedBody`, `c.var.validatedQuery`).
+  3. **User Context:** Accesses `user: AuthenticatedUserContextType` (set by `authMiddleware` in `c.var.user`) and passes it to the Service layer for authorization and attribution.
+  4. **Delegation:** Calls one primary Service layer method to handle the business operation, passing pre-validated data, path parameters, and `user: AuthenticatedUserContextType`.
+  5. **Response Formatting:** Formats HTTP responses based on Service layer output using `c.json(data, statusCode)` for success or maps service errors to appropriate `HTTPException` instances.
+- **Does NOT Do:**
+  - Handle complex business logic or rule validation (Services' responsibility)
+  - Interact directly with repositories (Services' responsibility)
+  - Perform detailed resource-based authorization (Services handle this, often via `AuthorizationService`)
+  - Orchestrate multiple service calls (complex operations belong in a service method)
+  - Call external APIs or third-party services directly (Services' responsibility)
+- **Key Principle:** Controllers should remain lightweight and focused on HTTP handling. They act as traffic directors and translators, using middleware for basic validation while delegating business decisions to services.
+
+### The Middleware Layer
 
 - **Location:** `src/middlewares/`
-- **Responsibility:**
-  - Handle cross-cutting concerns that apply to multiple routes or requests.
-  - Examples include:
-    - **Input Validation (`validation.middleware.ts`):** Using Zod schemas to validate incoming data (body, query, params).
-    - **Authentication (`auth.middleware.ts`):** Verifying user identity (via headers or tokens) and populating user context.
-    - **Error Handling (`error.middleware.ts`):** Catching errors and formatting standardized error responses.
-    - **Logging (`logging.middleware.ts`):** Recording request/response details.
-- **Framework:** Hono.js provides a middleware mechanism.
-
-### 6. Routes Layer
-
-- **Location:** `src/routes/` (e.g., `src/routes/note.router.ts`)
-- **Responsibility:**
-  - Define the specific HTTP routes (e.g., `/notes`, `/notes/:id`) and their corresponding HTTP methods (GET, POST, PUT, DELETE).
-  - Import and utilize controller methods as handlers for these routes.
-  - Apply route-specific or route-group-specific middleware. For example, validating a path parameter like `:noteId` before it even reaches a group of nested routes, or applying a specialized authorization check for a set of routes.
-  - Organize routes into logical modules based on domain or feature (e.g., all note-related routes in `note.router.ts`).
-  - Export Hono router instances that are then mounted by `src/app.ts` under specific base paths.
+- **Primary Role:** Intercepts requests and responses to perform cross-cutting operations before route handling or after response generation.
+- **Responsibilities:**
+  1. **Authentication & Authorization Context:** Verifies user identity (e.g., `auth.middleware.ts` checking tokens/headers) and populates a `user: AuthenticatedUserContextType` (e.g., onto `c.var.user`) for downstream use.
+  2. **Request Validation:** Validates incoming request data structure and types using Zod schemas from `src/schemas/`. This uses dedicated validation middleware (e.g., `zodValidator` or custom `validation.middleware.ts`). Failed validation triggers an appropriate `HTTPException` (400 or 422).
+  3. **Global Error Handling:** Catches unhandled exceptions, logs them, and transforms them into standardized HTTP error responses.
+  4. **Logging:** Records request and response details for monitoring, debugging, and auditing.
+  5. **Other Cross-Cutting Concerns:** Handles broad functionalities like CORS configuration, rate limiting, security headers, and response compression.
+- **Does NOT Do:**
+  - Contain domain-specific business logic (Services Layer's responsibility)
+  - Directly interact with Data Repositories (should use simple context or services for complex data needs)
+  - Make core controller or service decisions (like choosing service methods or enforcing business rules)
+- **Key Principle:** Middlewares are reusable components that handle common request-response concerns. They prepare context, validate early, and manage cross-cutting issues, keeping controller and service logic focused.
 - **Interaction:**
-  - Consumed by `src/app.ts` for mounting.
-  - Utilizes `Controllers` to handle the actual request logic.
-  - May use `Middlewares` for route-specific processing.
+  - Configures globally or per route group in `src/app.ts` or router setup
+  - Reads and modifies request data or Hono context (`c.set()`, `c.get()`, `c.var`)
+  - Can stop request flow early (e.g., for auth failures or invalid input)
+  - Uses schemas from `src/schemas/` for validation
 
-This layered approach ensures that each part of the application has a distinct responsibility, making the system easier to develop, test, debug, and maintain. Changes in one layer (e.g., switching the database) should ideally have minimal impact on other layers, provided the interfaces between them are respected.
+### The Routes Layer
+
+- **Location:** `src/routes/`
+- **Primary Role:** Maps HTTP routes to controller handlers and applies route-level middleware, serving as the API's entry points.
+- **Responsibilities:**
+  1. **Route Definition:** Maps HTTP methods (GET, POST, PUT, DELETE) to specific domain routes (e.g., all `/notes/*` routes in `note.routes.ts`).
+  2. **Controller Handler Association:** Links routes with their corresponding controller methods (e.g., `NoteController`).
+  3. **Route-Specific Middleware Application:** Applies middleware for specific routes or route groups. This includes:
+     - Path parameter validation (e.g., using `validate` middleware with `entityIdParamSchema` for `:noteId`)
+     - Route-specific query parameter or request body validation not covered by global middleware in `app.ts` or controller decorators
+     - Fine-grained authorization checks specific to certain routes
+  4. **Modularity and Organization:** Groups related routes into dedicated files (e.g., `note.routes.ts`, `user.routes.ts`), each exporting a Hono router instance.
+  5. **Parameter Context Preparation:** Sets up validation middleware to populate `c.var` (e.g., `c.var.validatedParams`, `c.var.validatedCourseParams`) for controller access.
+- **Does NOT Do:**
+  - Implement request handling logic (Controllers' role)
+  - Handle complex business logic or data manipulation (Services' role)
+  - Define global middleware (belongs in `app.ts`)
+  - Interact with the Data Access Layer (Repositories)
+- **Key Principle:** Acts as the API's switchboard, defining endpoints and their requirements while keeping `app.ts` streamlined through modular route definitions.- **Interaction:**
+  - Route modules (e.g., `noteRoutes` from `note.routes.ts`) are imported and mounted by `src/app.ts` onto base paths (e.g., `app.route("/notes", noteRoutes)`).
+  - Calls methods on Controller instances.
+  - Utilizes Middlewares (especially validation middlewares) to process requests before they reach controller handlers.

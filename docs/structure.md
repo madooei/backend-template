@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # Guidelines on Naming Files and Folder Structure
 
 ## Directories

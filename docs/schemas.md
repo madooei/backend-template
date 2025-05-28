@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # Guidelines for Defining Schemas and Types
 
 All types and schemas must be defined in `src/schemas` directory, following `entity-name.schema.ts` pattern. Each type must be defined using Zod schema and the typescript type must be infered from the Zod schema. We should export both the schema and the type. For example:
@@ -61,3 +56,9 @@ export const queryParamsSchema = z.object({
 
 export type QueryParamsType = z.infer<typeof queryParamsSchema>;
 ```
+
+## Guidelines for Defining and Using Environment Variables
+
+All environment variables must be defined and validated (through Zod) in the `src/env.ts` and imported from this file to other files.
+
+When adding new environment variables, make sure to document them in `.env.example`.
