@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-The application follows a strict **6-layer architecture** pattern that ensures clear separation of concerns and maintainability:
+The application follows a strict **6-layer architecture** pattern with **event-driven capabilities** that ensures clear separation of concerns and maintainability:
 
 ```plaintext
 ┌─────────────────┐
@@ -12,12 +12,25 @@ The application follows a strict **6-layer architecture** pattern that ensures c
 ├─────────────────┤
 │ Middlewares    │ ← Cross-cutting concerns (auth, validation, errors)
 ├─────────────────┤
-│ Services       │ ← Business logic and orchestration
+│ Services       │ ← Business logic and orchestration + Event Emission
 ├─────────────────┤
 │ Repositories   │ ← Data access abstraction
 ├─────────────────┤
 │ Models/Schemas │ ← Data structure and validation
 └─────────────────┘
+
+          ┌─────────────────┐
+          │ Event System    │ ← Real-time updates and event-driven architecture
+          │                 │
+          │ ┌─────────────┐ │
+          │ │Event Emitter│ │ ← Central event hub
+          │ └─────────────┘ │
+          │ ┌─────────────┐ │
+          │ │SSE Endpoint │ │ ← Real-time client connections
+          │ └─────────────┘ │
+          └─────────────────┘
+                    ↑
+              Event Flow
 ```
 
 ## Layer Responsibilities
@@ -393,6 +406,274 @@ When adding new environment variables, make sure to document them in `.env.examp
 - **Type Safety**: Environment variables are typed and validated at startup
 - **Documentation**: All variables documented in `.env.example`
 - **Import Pattern**: Always import environment variables from `src/env.ts`, never use `process.env` directly
+
+## Event-Driven Architecture Patterns
+
+### Event System Foundation (`src/events/`)
+
+**Purpose**: Centralized event management for real-time updates and event-driven architecture education
+
+#### Event Emitter Pattern
+
+```typescript
+// src/events/event-emitter.ts
+import { EventEmitter } from "events";
+
+export interface ServiceEvent<T = any> {
+  action: "created" | "updated" | "deleted";
+  data: T;
+  id?: string | number;
+  user?: { id: string; [key: string]: any };
+  visibility?: "public" | "private" | "team";
+  ownerId?: string;
+  timestamp: Date;
+}
+
+class AppEventEmitter extends EventEmitter {
+  emitServiceEvent<T>(serviceName: string, event: ServiceEvent<T>) {
+    this.emit(`${serviceName}:${event.action}`, event);
+  }
+}
+
+export const appEvents = new AppEventEmitter();
+```
+
+#### Base Service Pattern
+
+```typescript
+// src/events/base.service.ts
+import { appEvents, ServiceEvent } from "./event-emitter";
+
+export abstract class BaseService {
+  constructor(protected serviceName: string) {}
+
+  protected emitEvent<T>(
+    action: ServiceEvent<T>["action"],
+    data: T,
+    options?: {
+      id?: string | number;
+      user?: any;
+      visibility?: string;
+      ownerId?: string;
+    },
+  ) {
+    appEvents.emitServiceEvent(this.serviceName, {
+      action,
+      data,
+      timestamp: new Date(),
+      ...options,
+    });
+  }
+}
+```
+
+#### Service Integration Pattern
+
+```typescript
+// Enhanced service with event emission
+export class NoteService extends BaseService {
+  constructor(noteRepository?: INoteRepository) {
+    super("notes"); // Service name for events
+    // ... existing constructor logic
+  }
+
+  async create(
+    data: CreateNoteType,
+    user: AuthenticatedUserContextType,
+  ): Promise<NoteType> {
+    // ... existing business logic
+    const note = await this.noteRepository.create(data, user.userId);
+
+    // Emit event after successful operation
+    this.emitEvent("created", note, {
+      id: note.id,
+      user,
+      visibility: "public", // All notes are public per requirements
+    });
+
+    return note;
+  }
+}
+```
+
+### Server-Sent Events (SSE) Pattern
+
+#### SSE Endpoint Implementation
+
+```typescript
+// src/routes/events.router.ts
+import { Hono } from "hono";
+import { stream } from "hono/streaming";
+import { appEvents } from "@/events/event-emitter.ts";
+import { authMiddleware } from "@/middlewares/auth.middleware.ts";
+import type { AppEnv } from "@/schemas/app-env.schema.ts";
+
+export function createEventsRoutes() {
+  const router = new Hono<AppEnv>();
+
+  router.get("/events", authMiddleware, async (c) => {
+    const currentUser = c.var.user;
+
+    return stream(c, async (stream) => {
+      // Set SSE headers
+      c.header("Content-Type", "text/event-stream");
+      c.header("Cache-Control", "no-cache");
+      c.header("Connection", "keep-alive");
+      c.header("Access-Control-Allow-Origin", "*");
+
+      const eventHandler = (event: any) => {
+        if (shouldUserReceiveEvent(event, currentUser)) {
+          stream.write(`event: notes:${event.action}\n`);
+          stream.write(`data: ${JSON.stringify(event)}\n\n`);
+        }
+      };
+
+      // Listen to all note events
+      appEvents.on("notes:created", eventHandler);
+      appEvents.on("notes:updated", eventHandler);
+      appEvents.on("notes:deleted", eventHandler);
+
+      // Keep connection alive
+      const keepAlive = setInterval(() => {
+        stream.write(": heartbeat\n\n");
+      }, 30000);
+
+      // Cleanup on disconnect
+      stream.onAbort(() => {
+        appEvents.off("notes:created", eventHandler);
+        appEvents.off("notes:updated", eventHandler);
+        appEvents.off("notes:deleted", eventHandler);
+        clearInterval(keepAlive);
+      });
+    });
+  });
+
+  return router;
+}
+
+function shouldUserReceiveEvent(event: any, user: any): boolean {
+  // For now, all notes are public, so all authenticated users get events
+  return event.visibility === "public";
+}
+```
+
+### Event Schema Patterns
+
+```typescript
+// src/schemas/event.schema.ts
+import { z } from "zod";
+
+export const serviceEventSchema = z.object({
+  action: z.enum(["created", "updated", "deleted"]),
+  data: z.any(), // Will be typed based on specific entity
+  id: z.union([z.string(), z.number()]).optional(),
+  user: z
+    .object({
+      id: z.string(),
+    })
+    .passthrough()
+    .optional(),
+  visibility: z.enum(["public", "private", "team"]).optional(),
+  ownerId: z.string().optional(),
+  timestamp: z.date(),
+});
+
+export type ServiceEventType = z.infer<typeof serviceEventSchema>;
+
+// Specific event types
+export const noteEventSchema = serviceEventSchema.extend({
+  data: z.object({
+    id: z.string(),
+    content: z.string(),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
+  }),
+});
+
+export type NoteEventType = z.infer<typeof noteEventSchema>;
+```
+
+### Event Testing Patterns
+
+#### Event Emission Testing
+
+```typescript
+// tests/services/note.service.test.ts
+import { vi } from "vitest";
+import { appEvents } from "@/events/event-emitter.ts";
+
+describe("NoteService Event Emission", () => {
+  it("should emit created event after successful note creation", async () => {
+    const eventSpy = vi.spyOn(appEvents, "emitServiceEvent");
+
+    const note = await noteService.create(validNoteData, mockUser);
+
+    expect(eventSpy).toHaveBeenCalledWith("notes", {
+      action: "created",
+      data: note,
+      id: note.id,
+      user: mockUser,
+      visibility: "public",
+      timestamp: expect.any(Date),
+    });
+  });
+});
+```
+
+#### SSE Endpoint Testing
+
+```typescript
+// tests/routes/events.router.test.ts
+import { testClient } from "hono/testing";
+import { appEvents } from "@/events/event-emitter.ts";
+
+describe("Events SSE Endpoint", () => {
+  it("should stream events to authenticated clients", async () => {
+    const app = createTestApp();
+    const client = testClient(app);
+
+    // Mock SSE connection
+    const response = await client.events.$get({
+      headers: { Authorization: "Bearer valid-token" },
+    });
+
+    // Emit test event
+    appEvents.emitServiceEvent("notes", {
+      action: "created",
+      data: mockNote,
+      visibility: "public",
+      timestamp: new Date(),
+    });
+
+    // Verify event was streamed
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/event-stream");
+  });
+});
+```
+
+### Event System Benefits
+
+#### Educational Value
+
+- **Event-Driven Architecture**: Students learn how to decouple systems using events
+- **Real-time Communication**: Understanding of SSE vs WebSocket trade-offs
+- **Observer Pattern**: Practical implementation of the observer design pattern
+- **Scalability Concepts**: How events enable horizontal scaling
+
+#### Technical Benefits
+
+- **Loose Coupling**: Services don't need to know about real-time clients
+- **Extensibility**: Easy to add new event types and listeners
+- **Testing**: Events can be easily mocked and verified
+- **Performance**: Efficient event distribution to multiple clients
+
+#### Future Extensions
+
+- **Event Persistence**: Store events for replay capabilities
+- **Event Filtering**: Client-side subscription to specific event types
+- **Event Batching**: Combine multiple rapid events to reduce noise
+- **Cross-Service Events**: Events that span multiple microservices
 
 ## Development Workflow Patterns
 

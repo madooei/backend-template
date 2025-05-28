@@ -142,10 +142,46 @@ Each would follow the established Note pattern across all 6 layers, providing st
 
 #### Real-time Features
 
-- **Server-Sent Events (SSE)**: Live updates for note changes, teaching one-way real-time communication
+🚧 **IN PROGRESS - Server-Sent Events (SSE) Implementation**
+
+**Current Status**: Planning Complete, Implementation Ready
+**Educational Goal**: Teaching event-driven architecture and real-time communication patterns
+
+**Implementation Plan**:
+
+- **Phase 1**: Event system foundation with central event emitter
+- **Phase 2**: Service layer integration with BaseService pattern
+- **Phase 3**: SSE endpoint with authentication and filtering
+- **Phase 4**: Comprehensive testing and documentation
+
+**Architecture Overview**:
+
+- Central event emitter using Node.js EventEmitter
+- BaseService class for consistent event emission across services
+- Authenticated SSE endpoint with Hono.js streaming
+- Event filtering based on user permissions and visibility
+- Type-safe event schemas with Zod validation
+
+**Files to Create**:
+
+- `src/events/event-emitter.ts` - Central event system
+- `src/events/base.service.ts` - Base service with event emission
+- `src/routes/events.router.ts` - SSE endpoint
+- `src/schemas/event.schema.ts` - Event type definitions
+- Comprehensive test suite for all components
+
+**Files to Modify**:
+
+- `src/services/note.service.ts` - Add event emission
+- `src/app.ts` - Register events route
+- Update existing tests to verify event emission
+
+**Future Extensions**:
+
 - **WebSocket Integration**: Bidirectional real-time communication for collaborative features
-- **Event-driven Architecture**: Teaching how backend events can trigger frontend updates
-- **Use Case Examples**: Real-time note updates, live notifications, collaborative editing signals
+- **Event Persistence**: Store events for replay when clients reconnect
+- **Event Batching**: Batch multiple rapid events to reduce noise
+- **Client Filtering**: Allow clients to subscribe to specific event types
 
 ### Advanced Patterns for Senior Students
 
