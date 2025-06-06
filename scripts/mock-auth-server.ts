@@ -61,5 +61,5 @@ serve(
   },
   (info) => {
     console.log(`Mock Auth Server is running on http://localhost:${info.port}`);
-  }
+  },
 );
