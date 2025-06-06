@@ -5,6 +5,14 @@
   "type": "module",
   "author": "Ali Madooei",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madooei/backend-template.git"
+  },
+  "homepage": "https://madooei.github.io/backend-template/",
+  "bugs": {
+    "url": "https://github.com/madooei/backend-template/issues"
+  },
   "scripts": {
     "dev": "tsx watch scripts/mock-auth-server.ts & tsx watch src/server.ts",
     "build": "tsup",
@@ -13,10 +21,12 @@
     "lint:fix": "eslint --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "type-check": "tsc --noEmit --project tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "validate": "pnpm type-check && pnpm lint:fix && pnpm format:fix && pnpm test",
     "clean": "rm -rf dist coverage",
     "clean:all": "rm -rf dist coverage node_modules"
   },
