@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { createNoteRoutes } from "@/routes/note.router";
+import { createEventsRoutes } from "@/routes/events.router";
 import { NoteController } from "@/controllers/note.controller";
 import { NoteService } from "@/services/note.service";
 import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
@@ -16,6 +17,9 @@ app.get("/", (c) => {
 const noteService = new NoteService(new MockDbNoteRepository());
 const noteController = new NoteController(noteService);
 app.route("/notes", createNoteRoutes({ noteController }));
+
+// Events SSE endpoint
+app.route("/", createEventsRoutes());
 
 // Health check route
 app.get("/health", (c) => c.json({ status: "ok" }));
