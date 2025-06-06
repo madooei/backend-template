@@ -28,7 +28,7 @@ The Note entity serves as a comprehensive reference implementation demonstrating
 
 #### ✅ Controller Layer
 
-- **File**: `src/controllers/note-controller.ts`
+- **File**: `src/controllers/note.controller.ts`
 - **Features**: HTTP request/response handling, error mapping
 - **Integration**: Service layer delegation, middleware data access
 - **Status**: Complete with proper HTTP status codes

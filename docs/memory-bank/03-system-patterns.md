@@ -19,18 +19,18 @@ The application follows a strict **6-layer architecture** pattern with **event-d
 │ Models/Schemas │ ← Data structure and validation
 └─────────────────┘
 
-          ┌─────────────────┐
-          │ Event System    │ ← Real-time updates and event-driven architecture
-          │                 │
-          │ ┌─────────────┐ │
-          │ │Event Emitter│ │ ← Central event hub
-          │ └─────────────┘ │
-          │ ┌─────────────┐ │
-          │ │SSE Endpoint │ │ ← Real-time client connections
-          │ └─────────────┘ │
-          └─────────────────┘
-                    ↑
-              Event Flow
+┌────────────────────┐
+│   Event System    │ ← Real-time updates and event-driven architecture
+│                   │
+│ ┌────────────────┐ │
+│ │ Event Emitter │ │ ← Central event hub
+│ └────────────────┘ │
+│ ┌────────────────┐ │
+│ │ SSE Endpoint  │ │ ← Real-time client connections
+│ └────────────────┘ │
+└────────────────────┘
+          ↑
+     Event Flow
 ```
 
 ## Layer Responsibilities
@@ -389,8 +389,7 @@ For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
 
 Always use path aliases in import statements instead of relative paths.
 
-- **Path Aliases**: Always use `@/` instead of relative paths (e.g., `import { app } from "@/app.ts";`)
-- **File Extensions**: Include `.ts` extension in imports
+- **Path Aliases**: Always use `@/` instead of relative paths (e.g., `import { app } from "@/app";`)
 - **Barrel Exports**: Avoid; prefer explicit imports for clarity
 - **Path Mapping**: `@/*` is mapped to `src/*`. All path aliases must be defined in both `tsconfig.json` and `tsup.config.ts`
 
@@ -504,9 +503,9 @@ export class NoteService extends BaseService {
 // src/routes/events.router.ts
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
-import { appEvents } from "@/events/event-emitter.ts";
-import { authMiddleware } from "@/middlewares/auth.middleware.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import { appEvents } from "@/events/event-emitter";
+import { authMiddleware } from "@/middlewares/auth.middleware";
+import type { AppEnv } from "@/schemas/app-env.schema";
 
 export function createEventsRoutes() {
   const router = new Hono<AppEnv>();
@@ -600,7 +599,7 @@ export type NoteEventType = z.infer<typeof noteEventSchema>;
 ```typescript
 // tests/services/note.service.test.ts
 import { vi } from "vitest";
-import { appEvents } from "@/events/event-emitter.ts";
+import { appEvents } from "@/events/event-emitter";
 
 describe("NoteService Event Emission", () => {
   it("should emit created event after successful note creation", async () => {
@@ -625,7 +624,7 @@ describe("NoteService Event Emission", () => {
 ```typescript
 // tests/routes/events.router.test.ts
 import { testClient } from "hono/testing";
-import { appEvents } from "@/events/event-emitter.ts";
+import { appEvents } from "@/events/event-emitter";
 
 describe("Events SSE Endpoint", () => {
   it("should stream events to authenticated clients", async () => {
