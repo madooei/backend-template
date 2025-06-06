@@ -1,4 +1,4 @@
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 import { serve } from "@hono/node-server";
 import { Hono, type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -60,6 +60,6 @@ serve(
     port: PORT,
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  },
+    console.log(`Mock Auth Server is running on http://localhost:${info.port}`);
+  }
 );
