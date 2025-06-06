@@ -1,21 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
     "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["node", "vitest/globals"],
+    "noEmit": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "types": ["node"],
     "rootDir": ".",
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+    }
   },
   "include": ["src/**/*", "scripts/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist", "coverage"]
