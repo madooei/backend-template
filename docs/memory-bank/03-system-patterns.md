@@ -412,6 +412,12 @@ When adding new environment variables, make sure to document them in `.env.examp
 
 **Purpose**: Centralized event management for real-time updates and event-driven architecture education
 
+**⚠️ Known Issues & Improvements Needed**:
+
+- **ServiceEvent Interface**: Current interface includes resource-specific fields (`visibility`, `ownerId`) that don't work generically across different entity types
+- **Authorization Pattern**: Permission logic should be moved from generic interface to resource-specific filtering functions
+- **Planned Refactoring**: Make ServiceEvent generic with `id`, `resourceType` fields and optional `user` field for system events
+
 #### Event Emitter Pattern
 
 ```typescript
