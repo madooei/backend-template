@@ -1,14 +1,14 @@
 import type { Context } from "hono";
-import { NoteService } from "@/services/note.service.ts";
-import type { EntityIdParamType } from "@/schemas/shared.schema.ts";
+import { NoteService } from "@/services/note.service";
+import type { EntityIdParamType } from "@/schemas/shared.schema";
 import type {
   CreateNoteType,
   NoteQueryParamsType,
   UpdateNoteType,
-} from "@/schemas/note.schema.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { NotFoundError } from "@/errors.ts";
+} from "@/schemas/note.schema";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { NotFoundError } from "@/errors";
 
 export class NoteController {
   private noteService: NoteService;
