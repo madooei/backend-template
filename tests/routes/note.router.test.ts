@@ -1,27 +1,27 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { Mock } from "vitest";
 import { Hono, type Next } from "hono";
-import { createNoteRoutes } from "@/routes/note.router.ts";
-import { NoteController } from "@/controllers/note-controller.ts";
-import { NoteService } from "@/services/note.service.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import { createNoteRoutes } from "@/routes/note.router";
+import { NoteController } from "@/controllers/note.controller";
+import { NoteService } from "@/services/note.service";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { AppEnv } from "@/schemas/app-env.schema";
 import type {
   AuthenticatedUserContextType,
   UserIdType,
-} from "@/schemas/user.schemas.ts";
+} from "@/schemas/user.schemas";
 import type {
   CreateNoteType,
   NoteType,
   UpdateNoteType,
-} from "@/schemas/note.schema.ts";
-import type { PaginatedResultType } from "@/schemas/shared.schema.ts";
+} from "@/schemas/note.schema";
+import type { PaginatedResultType } from "@/schemas/shared.schema";
 import { HTTPException } from "hono/http-exception";
 import {
   BadRequestError,
   globalErrorHandler,
   UnauthenticatedError,
-} from "@/errors.ts";
+} from "@/errors";
 
 describe("Note Routes (E2E Style with Mock DB and Injected Mocks)", () => {
   let app: Hono<AppEnv>;

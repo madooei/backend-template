@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 import {
   createAuthMiddleware,
   type AuthMiddlewareDeps,
-} from "@/middlewares/auth.middleware.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { ServiceUnavailableError, UnauthenticatedError } from "@/errors.ts";
+} from "@/middlewares/auth.middleware";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { ServiceUnavailableError, UnauthenticatedError } from "@/errors";
 import type { MiddlewareHandler } from "hono";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import type { AppEnv } from "@/schemas/app-env.schema";
 
 // Mock service instance that will be created in beforeEach
 let mockAuthService: AuthMiddlewareDeps["authenticationService"];

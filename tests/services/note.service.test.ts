@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { NoteService } from "@/services/note.service.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { CreateNoteType, NoteType } from "@/schemas/note.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { UnauthorizedError } from "@/errors.ts";
+import { NoteService } from "@/services/note.service";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { CreateNoteType, NoteType } from "@/schemas/note.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { UnauthorizedError } from "@/errors";
 
 const adminUser: AuthenticatedUserContextType = {
   userId: "admin-1",

@@ -4,7 +4,7 @@ import {
   createNoteSchema,
   updateNoteSchema,
   noteQueryParamsSchema,
-} from "@/schemas/note.schema.ts";
+} from "@/schemas/note.schema";
 
 describe("noteSchema", () => {
   it("accepts valid note", () => {

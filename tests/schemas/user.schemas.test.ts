@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   userIdSchema,
   authenticatedUserContextSchema,
-} from "@/schemas/user.schemas.ts";
+} from "@/schemas/user.schemas";
 
 describe("userIdSchema", () => {
   it("accepts string userId", () => {

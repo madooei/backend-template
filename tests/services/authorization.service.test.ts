@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { AuthorizationService } from "@/services/authorization.service.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import type { NoteType } from "@/schemas/note.schema.ts";
+import { AuthorizationService } from "@/services/authorization.service";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import type { NoteType } from "@/schemas/note.schema";
 
 const adminUser: AuthenticatedUserContextType = {
   userId: "admin-1",

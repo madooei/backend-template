@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { NoteController } from "@/controllers/note-controller.ts";
-import type { NoteService } from "@/services/note.service.ts";
+import { NoteController } from "@/controllers/note.controller";
+import type { NoteService } from "@/services/note.service";
 import type {
   CreateNoteType,
   UpdateNoteType,
   NoteQueryParamsType,
   NoteType,
-} from "@/schemas/note.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+} from "@/schemas/note.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 import type {
   PaginatedResultType,
   EntityIdParamType,
-} from "@/schemas/shared.schema.ts";
-import { NotFoundError } from "@/errors.ts";
+} from "@/schemas/shared.schema";
+import { NotFoundError } from "@/errors";
 
 // Define an interface for the parameters of createMockContext for better type safety
 interface MockContextConfig {

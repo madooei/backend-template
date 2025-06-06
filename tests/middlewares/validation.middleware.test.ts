@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { validate } from "@/middlewares/validation.middleware.ts";
+import { validate } from "@/middlewares/validation.middleware";
 import { z } from "zod";
-import { BadRequestError, InternalServerError } from "@/errors.ts";
+import { BadRequestError, InternalServerError } from "@/errors";
 
 const testSchema = z.object({ foo: z.string(), bar: z.coerce.number() });
 
