@@ -1,15 +1,15 @@
-import type { INoteRepository } from "@/repositories/note.repository.ts";
-import type { PaginatedResultType } from "@/schemas/shared.schema.ts";
+import type { INoteRepository } from "@/repositories/note.repository";
+import type { PaginatedResultType } from "@/schemas/shared.schema";
 import type {
   CreateNoteType,
   NoteQueryParamsType,
   NoteType,
   UpdateNoteType,
-} from "@/schemas/note.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { AuthorizationService } from "@/services/authorization.service.ts";
-import { UnauthorizedError } from "@/errors.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
+} from "@/schemas/note.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { AuthorizationService } from "@/services/authorization.service";
+import { UnauthorizedError } from "@/errors";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
 
 export class NoteService {
   private readonly noteRepository: INoteRepository;

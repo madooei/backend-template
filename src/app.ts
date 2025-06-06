@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { createNoteRoutes } from "@/routes/note.router.ts";
-import { NoteController } from "@/controllers/note-controller.ts";
-import { NoteService } from "@/services/note.service.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { globalErrorHandler } from "@/errors.ts";
+import { createNoteRoutes } from "@/routes/note.router";
+import { NoteController } from "@/controllers/note.controller";
+import { NoteService } from "@/services/note.service";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import { globalErrorHandler } from "@/errors";
 
 export const app = new Hono<AppEnv>();
 

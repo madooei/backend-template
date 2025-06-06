@@ -1,5 +1,5 @@
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import type { NoteType } from "@/schemas/note.schema.ts";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import type { NoteType } from "@/schemas/note.schema";
 
 export class AuthorizationService {
   isAdmin(user: AuthenticatedUserContextType): boolean {

@@ -1,13 +1,10 @@
 import { Hono } from "hono";
-import type { NoteController } from "@/controllers/note-controller.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { validate as defaultValidate } from "@/middlewares/validation.middleware.ts";
-import { entityIdParamSchema } from "@/schemas/shared.schema.ts";
-import {
-  createNoteSchema,
-  noteQueryParamsSchema,
-} from "@/schemas/note.schema.ts";
-import { authMiddleware as defaultAuthMiddleware } from "@/middlewares/auth.middleware.ts";
+import type { NoteController } from "@/controllers/note.controller";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import { validate as defaultValidate } from "@/middlewares/validation.middleware";
+import { entityIdParamSchema } from "@/schemas/shared.schema";
+import { createNoteSchema, noteQueryParamsSchema } from "@/schemas/note.schema";
+import { authMiddleware as defaultAuthMiddleware } from "@/middlewares/auth.middleware";
 
 export interface CreateNoteRoutesDeps {
   noteController: NoteController;

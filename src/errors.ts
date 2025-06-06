@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
+import type { AppEnv } from "@/schemas/app-env.schema";
 
 export type ErrorCode = string | number;
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { queryParamsSchema } from "./shared.schema.ts";
-import { userIdSchema } from "./user.schemas.ts";
+import { queryParamsSchema } from "./shared.schema";
+import { userIdSchema } from "./user.schemas";
 
 export const noteIdSchema = z.string();
 export type NoteIdType = z.infer<typeof noteIdSchema>;

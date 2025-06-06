@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { AuthenticationService } from "@/services/authentication.service.ts";
-import { UnauthenticatedError } from "@/errors.ts";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import { AuthenticationService } from "@/services/authentication.service";
+import { UnauthenticatedError } from "@/errors";
 
 class TokenError extends UnauthenticatedError {
   constructor() {
