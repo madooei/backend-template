@@ -5,14 +5,14 @@ import type {
   UpdateNoteType,
   NoteQueryParamsType,
   NoteIdType,
-} from "@/schemas/note.schema.ts";
+} from "@/schemas/note.schema";
 import {
   DEFAULT_LIMIT,
   DEFAULT_PAGE,
   type PaginatedResultType,
-} from "@/schemas/shared.schema.ts";
-import type { INoteRepository } from "@/repositories/note.repository.ts";
-import type { UserIdType } from "@/schemas/user.schemas.ts";
+} from "@/schemas/shared.schema";
+import type { INoteRepository } from "@/repositories/note.repository";
+import type { UserIdType } from "@/schemas/user.schemas";
 
 export class MockDbNoteRepository implements INoteRepository {
   private notes: NoteType[] = [];

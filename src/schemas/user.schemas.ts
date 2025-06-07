@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { globalRoleSchema } from "@/schemas/roles.schemas.ts";
+import { globalRoleSchema } from "@/schemas/roles.schemas";
 
 export const userIdSchema = z.string();
 

@@ -4,9 +4,9 @@ import type {
   UpdateNoteType,
   NoteQueryParamsType,
   NoteIdType,
-} from "@/schemas/note.schema.ts";
-import type { PaginatedResultType } from "@/schemas/shared.schema.ts";
-import type { UserIdType } from "@/schemas/user.schemas.ts";
+} from "@/schemas/note.schema";
+import type { PaginatedResultType } from "@/schemas/shared.schema";
+import type { UserIdType } from "@/schemas/user.schemas";
 
 export interface INoteRepository {
   findAll(params: NoteQueryParamsType): Promise<PaginatedResultType<NoteType>>;

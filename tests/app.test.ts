@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { app } from "@/app.ts";
+import { app } from "@/app";
 
 // Tests specific to each route (e.g., `/notes`) are in the corresponding
 // router test file (e.g., `routes/note.router.test.ts`).

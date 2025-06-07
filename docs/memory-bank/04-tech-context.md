@@ -56,9 +56,11 @@ NODE_ENV=development
 # External Services
 AUTH_SERVICE_URL=http://localhost:3333
 
+# Database (MongoDB - Next Implementation Priority)
+# MONGODB_URI=mongodb://localhost:27017/backend-template
+# MONGODB_DB_NAME=backend-template
+
 # Database (examples for future use)
-# MONGODB_HOST=localhost
-# MONGODB_PORT=27017
 # POSTGRES_HOST=localhost
 # POSTGRES_PORT=5432
 ```
@@ -148,9 +150,20 @@ tests/
 
 - **@hono/node-server**: Node.js adapter for Hono.js
 - **dotenv**: Environment variable loading
-- **hono**: Core web framework
+- **hono**: Core web framework (v4.7+ with streaming support for SSE)
 - **uuid**: UUID generation utilities
 - **zod**: Schema validation and type inference
+
+#### Real-time Features Dependencies
+
+- **Node.js EventEmitter**: Built-in event system for centralized event management
+- **Hono Streaming**: Built-in streaming support for Server-Sent Events (SSE)
+- **No additional dependencies required**: SSE implementation uses existing Hono.js streaming capabilities
+
+#### Database Integration Dependencies (Next Priority)
+
+- **mongodb**: Official MongoDB driver for Node.js (planned)
+- **@types/mongodb**: TypeScript definitions for MongoDB (planned)
 
 ### Development Dependencies
 
@@ -240,3 +253,134 @@ tests/
 - **VS Code Integration**: Full debugging support with breakpoints
 - **Source Maps**: TypeScript debugging in development
 - **Console Logging**: Structured logging for development insights
+
+## Real-time Features Architecture
+
+### Server-Sent Events (SSE) Implementation
+
+#### Technical Foundation
+
+- **Hono.js Streaming**: Leverages built-in `stream()` function for SSE support
+- **Node.js EventEmitter**: Central event hub using native EventEmitter class
+- **TypeScript Integration**: Fully typed event system with Zod validation
+- **Authentication**: SSE connections authenticated via existing auth middleware
+
+#### Event System Design
+
+```typescript
+// Event flow architecture
+Service Operation → Event Emission → Central Event Hub → SSE Clients
+     ↓                    ↓                ↓              ↓
+  Business Logic    BaseService Pattern   EventEmitter   Filtered Stream
+```
+
+#### Performance Characteristics
+
+- **Memory Efficient**: Events are not persisted, reducing memory footprint
+- **Connection Management**: Automatic cleanup on client disconnect
+- **Heartbeat Mechanism**: 30-second intervals to maintain connection health
+- **Event Filtering**: Server-side filtering reduces unnecessary network traffic
+
+#### Scalability Considerations
+
+- **Horizontal Scaling**: Event system works within single process (suitable for educational template)
+- **Connection Limits**: Node.js can handle thousands of concurrent SSE connections
+- **Future Extensions**: Architecture ready for Redis pub/sub for multi-instance scaling
+- **Resource Usage**: Minimal CPU overhead for event emission and streaming
+
+### Event-Driven Architecture Benefits
+
+#### Educational Value
+
+- **Real-time Communication**: Students learn SSE vs WebSocket trade-offs
+- **Observer Pattern**: Practical implementation of design patterns
+- **Decoupled Systems**: Understanding of event-driven architecture principles
+- **Scalability Concepts**: Foundation for understanding distributed systems
+
+#### Technical Benefits
+
+- **Loose Coupling**: Services emit events without knowing about consumers
+- **Extensibility**: Easy to add new event types and listeners
+- **Testing**: Events can be easily mocked and verified in tests
+- **Maintainability**: Clear separation between business logic and real-time features
+
+### Implementation Phases
+
+#### Phase 1: Event System Foundation
+
+- Create central event emitter with TypeScript interfaces
+- Implement BaseService class for consistent event emission
+- Define event schemas with Zod validation
+
+#### Phase 2: Service Integration
+
+- Extend NoteService from BaseService
+- Add event emission after successful CRUD operations
+- Maintain backward compatibility with existing functionality
+
+#### Phase 3: SSE Endpoint
+
+- Implement authenticated SSE endpoint using Hono streaming
+- Add event filtering based on user permissions
+- Implement connection management and cleanup
+
+#### Phase 4: Testing & Documentation
+
+- Comprehensive test suite for event system
+- Integration tests for full event flow
+- Update documentation with usage examples
+
+### Client-Side Integration
+
+#### Browser EventSource API
+
+```javascript
+// Example client-side implementation
+const eventSource = new EventSource("/api/events", {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+eventSource.addEventListener("notes:created", (event) => {
+  const data = JSON.parse(event.data);
+  // Update UI with new note
+});
+```
+
+#### Framework Integration
+
+- **React**: Custom hooks for SSE connection management
+- **Vue**: Composables for reactive event handling
+- **Vanilla JS**: Direct EventSource API usage
+- **Error Handling**: Automatic reconnection strategies
+
+### Security Considerations
+
+#### Authentication & Authorization
+
+- **Bearer Token**: SSE connections use existing authentication system
+- **Event Filtering**: Server-side filtering prevents unauthorized data access
+- **CORS Configuration**: Proper CORS headers for cross-origin requests
+- **Rate Limiting**: Future consideration for connection rate limiting
+
+#### Data Privacy
+
+- **Visibility Levels**: Public/private/team event visibility system
+- **User Context**: Events include user information for authorization
+- **No Persistence**: Events are not stored, reducing data exposure risk
+- **Audit Trail**: Event emission can be logged for security auditing
+
+### Monitoring & Debugging
+
+#### Development Tools
+
+- **Browser DevTools**: Network tab shows SSE connection and events
+- **VS Code Debugging**: Full debugging support for event system
+- **Console Logging**: Structured logging for event emission and handling
+- **Test Coverage**: Comprehensive testing for all event scenarios
+
+#### Production Monitoring
+
+- **Connection Metrics**: Track active SSE connections
+- **Event Throughput**: Monitor event emission rates
+- **Error Tracking**: Log connection failures and event errors
+- **Performance Metrics**: Monitor memory usage and response times

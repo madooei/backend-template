@@ -1,17 +1,18 @@
-import type { INoteRepository } from "@/repositories/note.repository.ts";
-import type { PaginatedResultType } from "@/schemas/shared.schema.ts";
+import type { INoteRepository } from "@/repositories/note.repository";
+import type { PaginatedResultType } from "@/schemas/shared.schema";
 import type {
   CreateNoteType,
   NoteQueryParamsType,
   NoteType,
   UpdateNoteType,
-} from "@/schemas/note.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { AuthorizationService } from "@/services/authorization.service.ts";
-import { UnauthorizedError } from "@/errors.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
+} from "@/schemas/note.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { AuthorizationService } from "@/services/authorization.service";
+import { UnauthorizedError } from "@/errors";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import { BaseService } from "@/events/base.service";
 
-export class NoteService {
+export class NoteService extends BaseService {
   private readonly noteRepository: INoteRepository;
   private readonly authorizationService: AuthorizationService;
 
@@ -19,6 +20,8 @@ export class NoteService {
     noteRepository?: INoteRepository,
     authorizationService?: AuthorizationService,
   ) {
+    super("notes"); // Service name for events
+
     if (noteRepository) {
       this.noteRepository = noteRepository;
     } else {
@@ -64,7 +67,14 @@ export class NoteService {
     const canCreate = await this.authorizationService.canCreateNote(user);
     if (!canCreate) throw new UnauthorizedError();
 
-    return this.noteRepository.create(data, user.userId);
+    const note = await this.noteRepository.create(data, user.userId);
+
+    this.emitEvent("created", note, {
+      id: note.id,
+      user,
+    });
+
+    return note;
   }
 
   async update(
@@ -80,7 +90,17 @@ export class NoteService {
     const canUpdate = await this.authorizationService.canUpdateNote(user, note);
     if (!canUpdate) throw new UnauthorizedError();
 
-    return this.noteRepository.update(id, data);
+    const updatedNote = await this.noteRepository.update(id, data);
+    if (!updatedNote) {
+      return null;
+    }
+
+    this.emitEvent("updated", updatedNote, {
+      id: updatedNote.id,
+      user,
+    });
+
+    return updatedNote;
   }
 
   async delete(
@@ -95,6 +115,14 @@ export class NoteService {
     const canDelete = await this.authorizationService.canDeleteNote(user, note);
     if (!canDelete) throw new UnauthorizedError();
 
-    return this.noteRepository.remove(id);
+    const deleted = await this.noteRepository.remove(id);
+    if (deleted) {
+      this.emitEvent("deleted", note, {
+        id: note.id,
+        user,
+      });
+    }
+
+    return deleted;
   }
 }

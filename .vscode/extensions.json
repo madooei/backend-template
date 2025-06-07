@@ -3,6 +3,7 @@
     "dbaeumer.vscode-eslint",
     "ms-vscode.js-debug-nightly",
     "esbenp.prettier-vscode",
+    "streetsidesoftware.code-spell-checker",
     "ms-vscode.vscode-typescript-next",
     "ms-vscode-remote.vscode-remote-extensionpack",
     "vitest.explorer"

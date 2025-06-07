@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { globalRoleSchema, noteRoleSchema } from "@/schemas/roles.schemas.ts";
+import { globalRoleSchema, noteRoleSchema } from "@/schemas/roles.schemas";
 
 describe("globalRoleSchema", () => {
   it("accepts 'admin' and 'user'", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { CreateNoteType } from "@/schemas/note.schema.ts";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { CreateNoteType } from "@/schemas/note.schema";
 
 const userId = "user-1";
 const otherUserId = "user-2";

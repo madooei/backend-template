@@ -1,21 +1,31 @@
 import { Hono } from "hono";
-import { createNoteRoutes } from "@/routes/note.router.ts";
-import { NoteController } from "@/controllers/note-controller.ts";
-import { NoteService } from "@/services/note.service.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { globalErrorHandler } from "@/errors.ts";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import { createNoteRoutes } from "@/routes/note.router";
+import { createEventsRoutes } from "@/routes/events.router";
+import { NoteController } from "@/controllers/note.controller";
+import { NoteService } from "@/services/note.service";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import { globalErrorHandler } from "@/errors";
 
 export const app = new Hono<AppEnv>();
+
+app.use("/*", cors()); // Enable CORS for all routes
+app.use(logger());
 
 app.get("/", (c) => {
   console.log("Hello Hono!"); // Let's stop here to test the debugger (add a breakpoint here, and run the debugger)
   return c.text("Hello Hono!");
 });
 
+// Note routes
 const noteService = new NoteService(new MockDbNoteRepository());
 const noteController = new NoteController(noteService);
 app.route("/notes", createNoteRoutes({ noteController }));
+
+// Events SSE endpoint
+app.route("/events", createEventsRoutes());
 
 // Health check route
 app.get("/health", (c) => c.json({ status: "ok" }));

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { AuthenticationService } from "@/services/authentication.service.ts";
-import { env } from "@/env.ts";
-import { authenticatedUserContextSchema } from "@/schemas/user.schemas.ts";
-import { ServiceUnavailableError, UnauthenticatedError } from "@/errors.ts";
+import { AuthenticationService } from "@/services/authentication.service";
+import { env } from "@/env";
+import { authenticatedUserContextSchema } from "@/schemas/user.schemas";
+import { ServiceUnavailableError, UnauthenticatedError } from "@/errors";
 
 describe("AuthenticationService", () => {
   let service: AuthenticationService;

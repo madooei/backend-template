@@ -2,8 +2,8 @@ import type { MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import type { ZodTypeAny } from "zod";
-import type { AppEnv } from "@/schemas/app-env.schema.ts";
-import { BadRequestError, InternalServerError } from "@/errors.ts";
+import type { AppEnv } from "@/schemas/app-env.schema";
+import { BadRequestError, InternalServerError } from "@/errors";
 
 /**
  * Defines the possible sources from which data can be validated.

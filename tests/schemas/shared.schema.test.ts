@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { queryParamsSchema } from "@/schemas/shared.schema.ts";
+import { queryParamsSchema } from "@/schemas/shared.schema";
 import {
   paginatedResultsSchema,
   DEFAULT_PAGE,
   DEFAULT_LIMIT,
-} from "@/schemas/shared.schema.ts";
+} from "@/schemas/shared.schema";
 import { z } from "zod";
 
 describe("queryParamsSchema", () => {

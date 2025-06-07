@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { NoteService } from "@/services/note.service.ts";
-import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository.ts";
-import type { CreateNoteType, NoteType } from "@/schemas/note.schema.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import { UnauthorizedError } from "@/errors.ts";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { NoteService } from "@/services/note.service";
+import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import type { CreateNoteType, NoteType } from "@/schemas/note.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { UnauthorizedError } from "@/errors";
+import { appEvents } from "@/events/event-emitter";
 
 const adminUser: AuthenticatedUserContextType = {
   userId: "admin-1",
@@ -26,6 +27,7 @@ describe("NoteService", () => {
     noteRepository = new MockDbNoteRepository();
     noteService = new NoteService(noteRepository);
     noteRepository.clear();
+    appEvents.removeAllListeners();
   });
 
   describe("create", () => {
@@ -149,6 +151,167 @@ describe("NoteService", () => {
     it("returns false for non-existent note", async () => {
       await expect(noteService.delete("not-exist", adminUser)).resolves.toBe(
         false,
+      );
+    });
+  });
+
+  describe("Event Emission", () => {
+    it("should emit created event after successful note creation", async () => {
+      const eventSpy = vi.fn();
+      appEvents.on("notes:created", eventSpy);
+
+      const data: CreateNoteType = { content: "Test note" };
+      const note = await noteService.create(data, regularUser);
+
+      expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
+        action: "created",
+        data: note,
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
+        timestamp: expect.any(Date),
+        resourceType: "notes",
+      });
+    });
+
+    it("should emit updated event after successful note update", async () => {
+      const note = await noteService.create(
+        { content: "Original" },
+        regularUser,
+      );
+
+      const eventSpy = vi.fn();
+      appEvents.on("notes:updated", eventSpy);
+
+      const updatedNote = await noteService.update(
+        note.id,
+        { content: "Updated" },
+        regularUser,
+      );
+
+      expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
+        action: "updated",
+        data: updatedNote,
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
+        timestamp: expect.any(Date),
+        resourceType: "notes",
+      });
+    });
+
+    it("should emit deleted event after successful note deletion", async () => {
+      const note = await noteService.create(
+        { content: "To delete" },
+        regularUser,
+      );
+
+      const eventSpy = vi.fn();
+      appEvents.on("notes:deleted", eventSpy);
+
+      await noteService.delete(note.id, regularUser);
+
+      expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
+        action: "deleted",
+        data: note,
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
+        timestamp: expect.any(Date),
+        resourceType: "notes",
+      });
+    });
+
+    it("should not emit events for failed operations", async () => {
+      const eventSpy = vi.fn();
+      appEvents.on("notes:updated", eventSpy);
+      appEvents.on("notes:deleted", eventSpy);
+
+      // Try to update non-existent note
+      await noteService.update("non-existent", { content: "Test" }, adminUser);
+
+      // Try to delete non-existent note
+      await noteService.delete("non-existent", adminUser);
+
+      expect(eventSpy).not.toHaveBeenCalled();
+    });
+
+    it("should not emit events for unauthorized operations", async () => {
+      const note = await noteService.create({ content: "Secret" }, regularUser);
+
+      const eventSpy = vi.fn();
+      appEvents.on("notes:updated", eventSpy);
+      appEvents.on("notes:deleted", eventSpy);
+
+      // Try unauthorized update
+      try {
+        await noteService.update(note.id, { content: "Hack" }, otherUser);
+      } catch (error) {
+        // Expected to throw
+      }
+
+      // Try unauthorized delete
+      try {
+        await noteService.delete(note.id, otherUser);
+      } catch (error) {
+        // Expected to throw
+      }
+
+      expect(eventSpy).not.toHaveBeenCalled();
+    });
+
+    it("should emit events with correct user context", async () => {
+      const adminEventSpy = vi.fn();
+      const userEventSpy = vi.fn();
+
+      appEvents.on("notes:created", adminEventSpy);
+      appEvents.on("notes:created", userEventSpy);
+
+      // Create note as admin
+      const adminNote = await noteService.create(
+        { content: "Admin note" },
+        adminUser,
+      );
+
+      // Create note as regular user
+      const userNote = await noteService.create(
+        { content: "User note" },
+        regularUser,
+      );
+
+      expect(adminEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "created",
+          data: adminNote,
+          user: expect.objectContaining({
+            id: adminUser.userId,
+            userId: adminUser.userId,
+            globalRole: adminUser.globalRole,
+          }),
+          resourceType: "notes",
+        }),
+      );
+
+      expect(userEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "created",
+          data: userNote,
+          user: expect.objectContaining({
+            id: regularUser.userId,
+            userId: regularUser.userId,
+            globalRole: regularUser.globalRole,
+          }),
+          resourceType: "notes",
+        }),
       );
     });
   });

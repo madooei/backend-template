@@ -1,5 +1,5 @@
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import type { NoteType } from "@/schemas/note.schema.ts";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import type { NoteType } from "@/schemas/note.schema";
 
 export class AuthorizationService {
   isAdmin(user: AuthenticatedUserContextType): boolean {
@@ -38,6 +38,18 @@ export class AuthorizationService {
   ): Promise<boolean> {
     if (this.isAdmin(user)) return true;
     if (note.createdBy === user.userId) return true;
+    return false;
+  }
+
+  // --- Event Permissions ---
+
+  async canReceiveNoteEvent(
+    user: AuthenticatedUserContextType,
+    noteData: { createdBy: string; [key: string]: unknown },
+  ): Promise<boolean> {
+    // Apply same rules as viewing notes
+    if (this.isAdmin(user)) return true;
+    if (noteData.createdBy === user.userId) return true;
     return false;
   }
 

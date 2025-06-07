@@ -1,7 +1,7 @@
-import { env } from "@/env.ts";
-import { ServiceUnavailableError, UnauthenticatedError } from "@/errors.ts";
-import { authenticatedUserContextSchema } from "@/schemas/user.schemas.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import { env } from "@/env";
+import { ServiceUnavailableError, UnauthenticatedError } from "@/errors";
+import { authenticatedUserContextSchema } from "@/schemas/user.schemas";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 
 export class AuthenticationService {
   public async authenticateUserByToken(

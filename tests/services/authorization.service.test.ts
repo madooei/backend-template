@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { AuthorizationService } from "@/services/authorization.service.ts";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
-import type { NoteType } from "@/schemas/note.schema.ts";
+import { AuthorizationService } from "@/services/authorization.service";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import type { NoteType } from "@/schemas/note.schema";
 
 const adminUser: AuthenticatedUserContextType = {
   userId: "admin-1",
@@ -126,6 +126,29 @@ describe("AuthorizationService", () => {
     it("denies non-owner", async () => {
       await expect(
         service.canDeleteNote(regularUser, mockNoteOwnedByOtherUser),
+      ).resolves.toBe(false);
+    });
+  });
+
+  describe("canReceiveNoteEvent", () => {
+    it("allows admin to receive any note event", async () => {
+      const noteData = { createdBy: "other-user", content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(adminUser, noteData),
+      ).resolves.toBe(true);
+    });
+
+    it("allows owner to receive their note events", async () => {
+      const noteData = { createdBy: regularUser.userId, content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(regularUser, noteData),
+      ).resolves.toBe(true);
+    });
+
+    it("denies non-owner from receiving other users' note events", async () => {
+      const noteData = { createdBy: otherUser.userId, content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(regularUser, noteData),
       ).resolves.toBe(false);
     });
   });

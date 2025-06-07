@@ -1,5 +1,5 @@
 import type { Env } from "hono";
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas.ts";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 
 // Define the application-wide Environment type for Hono
 export interface AppEnv extends Env {
