@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { createNoteRoutes } from "@/routes/note.router";
 import { createEventsRoutes } from "@/routes/events.router";
 import { NoteController } from "@/controllers/note.controller";
@@ -8,6 +9,8 @@ import type { AppEnv } from "@/schemas/app-env.schema";
 import { globalErrorHandler } from "@/errors";
 
 export const app = new Hono<AppEnv>();
+
+app.use(logger());
 
 app.get("/", (c) => {
   console.log("Hello Hono!"); // Let's stop here to test the debugger (add a breakpoint here, and run the debugger)
