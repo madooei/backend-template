@@ -41,5 +41,17 @@ export class AuthorizationService {
     return false;
   }
 
+  // --- Event Permissions ---
+
+  async canReceiveNoteEvent(
+    user: AuthenticatedUserContextType,
+    noteData: { createdBy: string; [key: string]: unknown },
+  ): Promise<boolean> {
+    // Apply same rules as viewing notes
+    if (this.isAdmin(user)) return true;
+    if (noteData.createdBy === user.userId) return true;
+    return false;
+  }
+
   // --- Add More Permissions Here ---
 }

@@ -1,18 +1,17 @@
 import { z } from "zod";
 
 export const serviceEventSchema = z.object({
+  id: z.string(), // Event's own ID for storage/audit
   action: z.enum(["created", "updated", "deleted"]),
   data: z.unknown(), // Will be typed based on specific entity
-  id: z.union([z.string(), z.number()]).optional(),
   user: z
     .object({
       id: z.string(),
     })
     .passthrough()
-    .optional(),
-  visibility: z.enum(["public", "private", "team"]).optional(),
-  ownerId: z.string().optional(),
-  timestamp: z.date(),
+    .optional(), // Optional for system events
+  timestamp: z.date(), // When event occurred
+  resourceType: z.string(), // 'notes', 'users', 'projects', etc.
 });
 
 export type ServiceEventType = z.infer<typeof serviceEventSchema>;

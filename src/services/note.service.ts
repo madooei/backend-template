@@ -18,7 +18,7 @@ export class NoteService extends BaseService {
 
   constructor(
     noteRepository?: INoteRepository,
-    authorizationService?: AuthorizationService,
+    authorizationService?: AuthorizationService
   ) {
     super("notes"); // Service name for events
 
@@ -37,7 +37,7 @@ export class NoteService extends BaseService {
 
   async getAll(
     params: NoteQueryParamsType,
-    user: AuthenticatedUserContextType,
+    user: AuthenticatedUserContextType
   ): Promise<PaginatedResultType<NoteType>> {
     if (this.authorizationService.isAdmin(user)) {
       return this.noteRepository.findAll(params);
@@ -47,7 +47,7 @@ export class NoteService extends BaseService {
 
   async getById(
     id: string,
-    user: AuthenticatedUserContextType,
+    user: AuthenticatedUserContextType
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -62,18 +62,16 @@ export class NoteService extends BaseService {
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType,
+    user: AuthenticatedUserContextType
   ): Promise<NoteType> {
     const canCreate = await this.authorizationService.canCreateNote(user);
     if (!canCreate) throw new UnauthorizedError();
 
     const note = await this.noteRepository.create(data, user.userId);
 
-    // Emit event after successful operation
     this.emitEvent("created", note, {
       id: note.id,
       user,
-      visibility: "public", // All notes are public per requirements
     });
 
     return note;
@@ -82,7 +80,7 @@ export class NoteService extends BaseService {
   async update(
     id: string,
     data: UpdateNoteType,
-    user: AuthenticatedUserContextType,
+    user: AuthenticatedUserContextType
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -97,11 +95,9 @@ export class NoteService extends BaseService {
       return null;
     }
 
-    // Emit event after successful operation
     this.emitEvent("updated", updatedNote, {
       id: updatedNote.id,
       user,
-      visibility: "public", // All notes are public per requirements
     });
 
     return updatedNote;
@@ -109,7 +105,7 @@ export class NoteService extends BaseService {
 
   async delete(
     id: string,
-    user: AuthenticatedUserContextType,
+    user: AuthenticatedUserContextType
   ): Promise<boolean> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -121,11 +117,9 @@ export class NoteService extends BaseService {
 
     const deleted = await this.noteRepository.remove(id);
     if (deleted) {
-      // Emit event after successful operation
       this.emitEvent("deleted", note, {
         id: note.id,
         user,
-        visibility: "public", // All notes are public per requirements
       });
     }
 
