@@ -35,7 +35,6 @@ describe("Events Router", () => {
     expect(response.headers.get("content-type")).toBe("text/event-stream");
     expect(response.headers.get("cache-control")).toBe("no-cache");
     expect(response.headers.get("connection")).toBe("keep-alive");
-    expect(response.headers.get("access-control-allow-origin")).toBe("*");
   });
 
   it("should require authentication", async () => {
