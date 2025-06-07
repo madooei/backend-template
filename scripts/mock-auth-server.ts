@@ -1,22 +1,7 @@
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 import { serve } from "@hono/node-server";
 import { Hono, type Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-
-const users: AuthenticatedUserContextType[] = [
-  {
-    userId: "user-1",
-    globalRole: "user",
-  },
-  {
-    userId: "user-2",
-    globalRole: "user",
-  },
-  {
-    userId: "admin-1",
-    globalRole: "admin",
-  },
-];
+import { users } from "./mock-users";
 
 const PORT = 3333;
 const app = new Hono();
