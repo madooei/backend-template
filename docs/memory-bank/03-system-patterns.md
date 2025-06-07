@@ -83,7 +83,7 @@ export const updateNoteSchema = noteSchema
     updatedAt: true,
   })
   .partial(); // All fields become optional for updates
-export type UpdateNotetype = z.infer<typeof updateNoteSchema>;
+export type UpdateNoteType = z.infer<typeof updateNoteSchema>;
 ```
 
 Place shared types/schema in `src/schemas/shared.schema.ts`. For example:
@@ -356,14 +356,58 @@ Files should follow this naming pattern to maintain consistency and readability 
 
 For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
 
+### Resource Naming Convention
+
+**Critical Rule**: Use **singular** for domain entities/resources, **plural** for cross-cutting concerns:
+
+- **Domain Entities** (singular): `note.schema.ts`, `note.service.ts`, `note.controller.ts`, `note.router.ts`
+- **Cross-cutting Concerns** (plural): `events.router.ts` (handles events across all resources)
+- **Utility Services** (descriptive): `authentication.service.ts`, `authorization.service.ts`
+
 ### Specific Naming Patterns
 
-- **Schemas**: `entity-name.schema.ts`
+- **Schemas**: `entity-name.schema.ts` (singular entity)
 - **Repositories**: `entity-name.repository.ts` (interface), `entity-name.mockdb.repository.ts` (implementation)
-- **Services**: `entity-name.service.ts`
-- **Controllers**: `entity-name-controller.ts`
-- **Routes**: `entity-name.router.ts`
+- **Services**: `entity-name.service.ts` (singular entity) or `descriptive-name.service.ts` (utility services)
+- **Controllers**: `entity-name.controller.ts` (singular entity)
+- **Routes**: `entity-name.router.ts` (singular entity) or `cross-cutting-concern.router.ts` (plural for cross-cutting)
 - **Tests**: Mirror source structure with `.test.ts` suffix
+
+### Examples
+
+**✅ Correct Domain Entity Naming:**
+
+```
+note.schema.ts
+note.service.ts
+note.controller.ts
+note.router.ts
+note.repository.ts
+```
+
+**✅ Correct Cross-cutting Concern Naming:**
+
+```
+events.router.ts          // Handles events across all resources
+metrics.router.ts         // Would handle metrics across all resources
+health.router.ts          // Would handle health checks across all resources
+```
+
+**✅ Correct Utility Service Naming:**
+
+```
+authentication.service.ts // Authentication logic
+authorization.service.ts  // Authorization logic
+email.service.ts          // Email sending logic
+```
+
+**❌ Incorrect Naming:**
+
+```
+notes.schema.ts           // Should be note.schema.ts (singular)
+event.router.ts           // Should be events.router.ts (cross-cutting concern)
+auth.service.ts           // Should be authentication.service.ts (descriptive)
+```
 
 ## Directory Structure
 
@@ -375,6 +419,7 @@ For general-purpose files like `app.ts` or `server.ts`, you can omit the "type".
 ├── scripts
 ├── src
 │   ├── controllers
+│   ├── events
 │   ├── errors
 │   ├── middlewares
 │   ├── repositories
@@ -428,19 +473,10 @@ When adding new environment variables, make sure to document them in `.env.examp
 ```typescript
 // src/events/event-emitter.ts
 import { EventEmitter } from "events";
-
-export interface ServiceEvent<T = any> {
-  action: "created" | "updated" | "deleted";
-  data: T;
-  id?: string | number;
-  user?: { id: string; [key: string]: any };
-  visibility?: "public" | "private" | "team";
-  ownerId?: string;
-  timestamp: Date;
-}
+import type { ServiceEventType } from "@/schemas/event.schema";
 
 class AppEventEmitter extends EventEmitter {
-  emitServiceEvent<T>(serviceName: string, event: ServiceEvent<T>) {
+  emitServiceEvent(serviceName: string, event: ServiceEventType) {
     this.emit(`${serviceName}:${event.action}`, event);
   }
 }
@@ -452,26 +488,35 @@ export const appEvents = new AppEventEmitter();
 
 ```typescript
 // src/events/base.service.ts
-import { appEvents, ServiceEvent } from "./event-emitter";
+import { appEvents } from "./event-emitter";
+import type { ServiceEventType } from "@/schemas/event.schema";
+import { v4 as uuidv4 } from "uuid";
 
 export abstract class BaseService {
   constructor(protected serviceName: string) {}
 
   protected emitEvent<T>(
-    action: ServiceEvent<T>["action"],
+    action: ServiceEventType["action"],
     data: T,
     options?: {
-      id?: string | number;
-      user?: any;
-      visibility?: string;
-      ownerId?: string;
+      id?: string;
+      user?: { userId: string; [key: string]: unknown };
     },
   ) {
+    const eventUser = options?.user
+      ? {
+          id: options.user.userId,
+          ...options.user,
+        }
+      : undefined;
+
     appEvents.emitServiceEvent(this.serviceName, {
+      id: options?.id || uuidv4(),
       action,
       data,
+      user: eventUser,
       timestamp: new Date(),
-      ...options,
+      resourceType: this.serviceName,
     });
   }
 }
@@ -498,7 +543,6 @@ export class NoteService extends BaseService {
     this.emitEvent("created", note, {
       id: note.id,
       user,
-      visibility: "public", // All notes are public per requirements
     });
 
     return note;
@@ -513,57 +557,116 @@ export class NoteService extends BaseService {
 ```typescript
 // src/routes/events.router.ts
 import { Hono } from "hono";
-import { stream } from "hono/streaming";
 import { appEvents } from "@/events/event-emitter";
 import { authMiddleware } from "@/middlewares/auth.middleware";
+import { AuthorizationService } from "@/services/authorization.service";
 import type { AppEnv } from "@/schemas/app-env.schema";
+import type { ServiceEventType } from "@/schemas/event.schema";
+import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 
 export function createEventsRoutes() {
   const router = new Hono<AppEnv>();
 
   router.get("/events", authMiddleware, async (c) => {
     const currentUser = c.var.user;
+    if (!currentUser) {
+      return c.text("Unauthorized", 401);
+    }
 
-    return stream(c, async (stream) => {
-      // Set SSE headers
-      c.header("Content-Type", "text/event-stream");
-      c.header("Cache-Control", "no-cache");
-      c.header("Connection", "keep-alive");
-      c.header("Access-Control-Allow-Origin", "*");
+    const authorizationService = new AuthorizationService();
 
-      const eventHandler = (event: any) => {
-        if (shouldUserReceiveEvent(event, currentUser)) {
-          stream.write(`event: notes:${event.action}\n`);
-          stream.write(`data: ${JSON.stringify(event)}\n\n`);
+    // Return a Response with a ReadableStream
+    const readable = new ReadableStream({
+      start(controller) {
+        // Send initial connection message
+        controller.enqueue(
+          new TextEncoder().encode(`data: {"type":"connected"}\n\n`),
+        );
+
+        const eventHandler = async (event: ServiceEventType) => {
+          try {
+            const canReceive = await shouldUserReceiveEvent(
+              event,
+              currentUser,
+              authorizationService,
+            );
+            if (canReceive) {
+              const eventData = `event: notes:${event.action}\ndata: ${JSON.stringify(event)}\n\n`;
+              controller.enqueue(new TextEncoder().encode(eventData));
+            }
+          } catch (error: unknown) {
+            console.error("Error in event handler:", error);
+          }
+        };
+
+        // Listen to all note events
+        appEvents.on("notes:created", eventHandler);
+        appEvents.on("notes:updated", eventHandler);
+        appEvents.on("notes:deleted", eventHandler);
+
+        // Keep connection alive with heartbeat
+        const keepAlive = setInterval(() => {
+          try {
+            controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
+          } catch (error: unknown) {
+            console.error("Heartbeat error:", error);
+            clearInterval(keepAlive);
+          }
+        }, 30000);
+
+        // Store cleanup function
+        (controller as any).cleanup = () => {
+          appEvents.off("notes:created", eventHandler);
+          appEvents.off("notes:updated", eventHandler);
+          appEvents.off("notes:deleted", eventHandler);
+          clearInterval(keepAlive);
+        };
+      },
+      cancel(controller) {
+        // Cleanup when client disconnects
+        if ((controller as any).cleanup) {
+          (controller as any).cleanup();
         }
-      };
+      },
+    });
 
-      // Listen to all note events
-      appEvents.on("notes:created", eventHandler);
-      appEvents.on("notes:updated", eventHandler);
-      appEvents.on("notes:deleted", eventHandler);
-
-      // Keep connection alive
-      const keepAlive = setInterval(() => {
-        stream.write(": heartbeat\n\n");
-      }, 30000);
-
-      // Cleanup on disconnect
-      stream.onAbort(() => {
-        appEvents.off("notes:created", eventHandler);
-        appEvents.off("notes:updated", eventHandler);
-        appEvents.off("notes:deleted", eventHandler);
-        clearInterval(keepAlive);
-      });
+    // Set SSE headers directly on the Response object
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     });
   });
 
   return router;
 }
 
-function shouldUserReceiveEvent(event: any, user: any): boolean {
-  // For now, all notes are public, so all authenticated users get events
-  return event.visibility === "public";
+async function shouldUserReceiveEvent(
+  event: ServiceEventType,
+  user: AuthenticatedUserContextType,
+  authorizationService: AuthorizationService,
+): Promise<boolean> {
+  // Resource-specific authorization logic using AuthorizationService
+  switch (event.resourceType) {
+    case "notes":
+      // Ensure event.data has the required structure for note events
+      if (
+        typeof event.data === "object" &&
+        event.data !== null &&
+        "createdBy" in event.data
+      ) {
+        return await authorizationService.canReceiveNoteEvent(
+          user,
+          event.data as { createdBy: string; [key: string]: unknown },
+        );
+      }
+      return false;
+    default:
+      // Unknown resource types are not allowed
+      return false;
+  }
 }
 ```
 
@@ -574,18 +677,17 @@ function shouldUserReceiveEvent(event: any, user: any): boolean {
 import { z } from "zod";
 
 export const serviceEventSchema = z.object({
+  id: z.string(), // Event's own ID for storage/audit
   action: z.enum(["created", "updated", "deleted"]),
-  data: z.any(), // Will be typed based on specific entity
-  id: z.union([z.string(), z.number()]).optional(),
+  data: z.unknown(), // Will be typed based on specific entity
   user: z
     .object({
       id: z.string(),
     })
     .passthrough()
-    .optional(),
-  visibility: z.enum(["public", "private", "team"]).optional(),
-  ownerId: z.string().optional(),
-  timestamp: z.date(),
+    .optional(), // Optional for system events
+  timestamp: z.date(), // When event occurred
+  resourceType: z.string(), // 'notes', 'users', 'projects', etc.
 });
 
 export type ServiceEventType = z.infer<typeof serviceEventSchema>;
@@ -619,12 +721,15 @@ describe("NoteService Event Emission", () => {
     const note = await noteService.create(validNoteData, mockUser);
 
     expect(eventSpy).toHaveBeenCalledWith("notes", {
+      id: expect.any(String),
       action: "created",
       data: note,
-      id: note.id,
-      user: mockUser,
-      visibility: "public",
+      user: {
+        id: mockUser.userId,
+        ...mockUser,
+      },
       timestamp: expect.any(Date),
+      resourceType: "notes",
     });
   });
 });
@@ -649,10 +754,12 @@ describe("Events SSE Endpoint", () => {
 
     // Emit test event
     appEvents.emitServiceEvent("notes", {
+      id: "event-123",
       action: "created",
       data: mockNote,
-      visibility: "public",
+      user: { id: "user-123" },
       timestamp: new Date(),
+      resourceType: "notes",
     });
 
     // Verify event was streamed
