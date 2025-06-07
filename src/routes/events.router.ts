@@ -5,16 +5,24 @@ import { AuthorizationService } from "@/services/authorization.service";
 import type { AppEnv } from "@/schemas/app-env.schema";
 import type { ServiceEventType } from "@/schemas/event.schema";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
+import { authMiddleware as defaultAuthMiddleware } from "@/middlewares/auth.middleware";
 
 // Add interface for controller with cleanup function
 interface SSEController extends ReadableStreamDefaultController<Uint8Array> {
   cleanup?: () => void;
 }
 
-export function createEventsRoutes() {
+interface EventsRouteOptions {
+  authMiddleware?: typeof defaultAuthMiddleware;
+}
+
+export function createEventsRoutes(options?: EventsRouteOptions) {
   const router = new Hono<AppEnv>();
 
-  router.get("/events", authMiddleware, async (c) => {
+  // Use injected middleware or default
+  const authMiddlewareToUse = options?.authMiddleware || authMiddleware;
+
+  router.get("/events", authMiddlewareToUse, async (c) => {
     const currentUser = c.var.user;
     if (!currentUser) {
       return c.text("Unauthorized", 401);

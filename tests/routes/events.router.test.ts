@@ -1,35 +1,46 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { testClient } from "hono/testing";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Hono } from "hono";
 import { createEventsRoutes } from "@/routes/events.router";
 import { appEvents } from "@/events/event-emitter";
 import type { AppEnv } from "@/schemas/app-env.schema";
-
-// Mock the auth middleware
-vi.mock("@/middlewares/auth.middleware", () => ({
-  authMiddleware: vi.fn(async (c, next) => {
-    // Mock authenticated user
-    c.set("user", {
-      userId: "test-user-1",
-      globalRole: "user",
-    });
-    await next();
-  }),
-}));
+import type {
+  AuthenticatedUserContextType,
+  UserIdType,
+} from "@/schemas/user.schemas";
+import { globalErrorHandler } from "@/errors";
 
 describe("Events Router", () => {
   let app: Hono<AppEnv>;
-  let client: ReturnType<typeof testClient>;
+  let mockAuthMiddleware: any;
+
+  const testUser: AuthenticatedUserContextType = {
+    userId: "user-test-123" as UserIdType,
+    globalRole: "user",
+  };
 
   beforeEach(() => {
+    // Create fresh mock middleware for each test
+    mockAuthMiddleware = vi.fn(async (c: any, next: any) => {
+      c.set("user", testUser);
+      await next();
+    });
+
     app = new Hono<AppEnv>();
-    app.route("/", createEventsRoutes());
-    client = testClient(app);
+    app.onError(globalErrorHandler);
+    // Inject the mock middleware directly
+    app.route("/", createEventsRoutes({ authMiddleware: mockAuthMiddleware }));
+    appEvents.removeAllListeners();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
     appEvents.removeAllListeners();
   });
 
   it("should return SSE headers for events endpoint", async () => {
-    const response = await client.events.$get();
+    const response = await app.request("/events", {
+      method: "GET",
+    });
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("text/event-stream");
@@ -38,85 +49,61 @@ describe("Events Router", () => {
   });
 
   it("should require authentication", async () => {
-    // Mock auth middleware to throw error
-    vi.doMock("@/middlewares/auth.middleware", () => ({
-      authMiddleware: vi.fn(async () => {
-        throw new Error("Unauthorized");
-      }),
-    }));
+    // Override auth middleware to simulate unauthenticated user
+    const unauthenticatedMiddleware = vi.fn(async (c: any, next: any) => {
+      c.set("user", null);
+      await next();
+    });
 
-    // Re-import to get mocked version
-    const { createEventsRoutes: mockedCreateEventsRoutes } = await import(
-      "@/routes/events.router"
+    // Create a new app with unauthenticated middleware
+    const testApp = new Hono<AppEnv>();
+    testApp.onError(globalErrorHandler);
+    testApp.route(
+      "/",
+      createEventsRoutes({ authMiddleware: unauthenticatedMiddleware }),
     );
 
-    const testApp = new Hono<AppEnv>();
-    testApp.route("/", mockedCreateEventsRoutes());
-    const testClientInstance = testClient(testApp);
+    const response = await testApp.request("/events", {
+      method: "GET",
+    });
 
-    try {
-      await testClientInstance.events.$get();
-      expect.fail("Should have thrown an error");
-    } catch (error) {
-      expect(error).toBeDefined();
-    }
+    expect(response.status).toBe(401);
+    const responseText = await response.text();
+    expect(responseText).toBe("Unauthorized");
   });
 
-  it("should stream events in SSE format", async () => {
-    // Start the SSE connection
-    const response = await client.events.$get();
-    expect(response.status).toBe(200);
+  it("should establish SSE connection and send initial message", async () => {
+    const response = await app.request("/events", {
+      method: "GET",
+    });
 
-    // Since we can't easily test streaming in unit tests,
-    // we'll test the event filtering logic separately
-    const testEvent = {
-      id: "event-1",
-      action: "created" as const,
-      data: { id: "1", content: "Test note" },
-      resourceType: "notes",
-      timestamp: new Date(),
-    };
-
-    // Since shouldUserReceiveEvent is now internal and uses AuthorizationService,
-    // we'll test the behavior through the actual SSE endpoint
-    // The filtering logic is tested through integration
     expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+
+    // Note: Testing the actual streaming content is complex in unit tests
+    // but we can verify the connection is established
+    expect(response.headers.get("content-type")).toBe("text/event-stream");
   });
 
-  it("should filter events based on authorization", async () => {
-    const response = await client.events.$get();
-    expect(response.status).toBe(200);
-
-    // The filtering logic is now handled by AuthorizationService
-    // and tested through the actual SSE endpoint behavior
-    // This ensures proper integration between authorization and events
-  });
-
-  it("should handle note events", async () => {
-    const response = await client.events.$get();
-    expect(response.status).toBe(200);
-
-    // Test that the event listeners are properly set up
-    // We can verify this by checking that events are emitted
+  it("should handle note events through event emitter", async () => {
+    // Set up event spy
     const eventSpy = vi.fn();
     appEvents.on("notes:created", eventSpy);
 
     const testEvent = {
       id: "event-1",
       action: "created" as const,
-      data: { id: "1", content: "Test note" },
+      data: { id: "1", content: "Test note", createdBy: testUser.userId },
       resourceType: "notes",
       timestamp: new Date(),
     };
 
+    // Emit event and verify it's received
     appEvents.emitServiceEvent("notes", testEvent);
     expect(eventSpy).toHaveBeenCalledWith(testEvent);
   });
 
   it("should handle multiple event types", async () => {
-    const response = await client.events.$get();
-    expect(response.status).toBe(200);
-
     // Set up spies for different event types
     const createdSpy = vi.fn();
     const updatedSpy = vi.fn();
@@ -128,7 +115,7 @@ describe("Events Router", () => {
 
     const baseEvent = {
       id: "event-1",
-      data: { id: "1", content: "Test note" },
+      data: { id: "1", content: "Test note", createdBy: testUser.userId },
       resourceType: "notes",
       timestamp: new Date(),
     };
@@ -144,17 +131,15 @@ describe("Events Router", () => {
   });
 
   it("should properly format SSE event names", async () => {
-    // Test the event name formatting
     const testEvent = {
       id: "event-1",
       action: "created" as const,
-      data: { id: "1", content: "Test note" },
+      data: { id: "1", content: "Test note", createdBy: testUser.userId },
       resourceType: "notes",
       timestamp: new Date(),
     };
 
-    // The event should be formatted as "notes:created"
-    // This is tested indirectly through the event listener setup
+    // Test that the event listeners are set up with correct names
     const eventSpy = vi.fn();
     appEvents.on("notes:created", eventSpy);
 
