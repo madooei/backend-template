@@ -22,7 +22,7 @@ export function createEventsRoutes(options?: EventsRouteOptions) {
   // Use injected middleware or default
   const authMiddlewareToUse = options?.authMiddleware || authMiddleware;
 
-  router.get("/events", authMiddlewareToUse, async (c) => {
+  router.get("/", authMiddlewareToUse, async (c) => {
     const currentUser = c.var.user;
     if (!currentUser) {
       return c.text("Unauthorized", 401);

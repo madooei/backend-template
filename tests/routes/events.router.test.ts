@@ -62,7 +62,10 @@ describe("Events Router (E2E Style with Mock Dependencies)", () => {
 
   // Helper to set up routes for most tests
   const setupRoutes = () => {
-    app.route("/", createEventsRoutes({ authMiddleware: mockAuthMiddleware }));
+    app.route(
+      "/events",
+      createEventsRoutes({ authMiddleware: mockAuthMiddleware }),
+    );
   };
 
   it("should return SSE headers for events endpoint", async () => {

@@ -19,12 +19,13 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+// Note routes
 const noteService = new NoteService(new MockDbNoteRepository());
 const noteController = new NoteController(noteService);
 app.route("/notes", createNoteRoutes({ noteController }));
 
 // Events SSE endpoint
-app.route("/", createEventsRoutes());
+app.route("/events", createEventsRoutes());
 
 // Health check route
 app.get("/health", (c) => c.json({ status: "ok" }));
