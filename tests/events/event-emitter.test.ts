@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { appEvents } from "@/events/event-emitter";
-import type { ServiceEvent } from "@/events/event-emitter";
+import type { ServiceEventType } from "@/schemas/event.schema";
 
 describe("AppEventEmitter", () => {
   beforeEach(() => {
@@ -12,12 +12,12 @@ describe("AppEventEmitter", () => {
     const eventHandler = vi.fn();
     appEvents.on("notes:created", eventHandler);
 
-    const testEvent: ServiceEvent = {
+    const testEvent: ServiceEventType = {
       action: "created",
       data: { id: "1", content: "Test note" },
       id: "1",
       user: { id: "user1" },
-      visibility: "public",
+      resourceType: "notes",
       timestamp: new Date(),
     };
 
@@ -39,8 +39,8 @@ describe("AppEventEmitter", () => {
       data: { id: "1", content: "Test note" },
       id: "1",
       user: { id: "user1" },
-      visibility: "public" as const,
       timestamp: new Date(),
+      resourceType: "notes",
     };
 
     appEvents.emitServiceEvent("notes", { ...baseEvent, action: "created" });
@@ -59,10 +59,12 @@ describe("AppEventEmitter", () => {
     appEvents.on("notes:created", handler1);
     appEvents.on("notes:created", handler2);
 
-    const testEvent: ServiceEvent = {
+    const testEvent: ServiceEventType = {
+      id: "1",
       action: "created",
       data: { id: "1", content: "Test note" },
       timestamp: new Date(),
+      resourceType: "notes",
     };
 
     appEvents.emitServiceEvent("notes", testEvent);
@@ -75,10 +77,12 @@ describe("AppEventEmitter", () => {
     const eventHandler = vi.fn();
     appEvents.on("notes:created", eventHandler);
 
-    const testEvent: ServiceEvent = {
+    const testEvent: ServiceEventType = {
+      id: "1",
       action: "created",
       data: { id: "1", content: "Test note" },
       timestamp: new Date(),
+      resourceType: "notes",
     };
 
     appEvents.emitServiceEvent("notes", testEvent);
@@ -93,10 +97,12 @@ describe("AppEventEmitter", () => {
     const eventHandler = vi.fn();
     appEvents.on("notes:created", eventHandler);
 
-    const minimalEvent: ServiceEvent = {
+    const minimalEvent: ServiceEventType = {
+      id: "1",
       action: "created",
       data: { id: "1", content: "Test note" },
       timestamp: new Date(),
+      resourceType: "notes",
     };
 
     appEvents.emitServiceEvent("notes", minimalEvent);
