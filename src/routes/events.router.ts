@@ -6,6 +6,11 @@ import type { AppEnv } from "@/schemas/app-env.schema";
 import type { ServiceEventType } from "@/schemas/event.schema";
 import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
 
+// Add interface for controller with cleanup function
+interface SSEController extends ReadableStreamDefaultController<Uint8Array> {
+  cleanup?: () => void;
+}
+
 export function createEventsRoutes() {
   const router = new Hono<AppEnv>();
 
@@ -15,17 +20,11 @@ export function createEventsRoutes() {
       return c.text("Unauthorized", 401);
     }
 
-    // Set SSE headers
-    c.header("Content-Type", "text/event-stream");
-    c.header("Cache-Control", "no-cache");
-    c.header("Connection", "keep-alive");
-    c.header("Access-Control-Allow-Origin", "*");
-
     const authorizationService = new AuthorizationService();
 
     // Return a Response with a ReadableStream
     const readable = new ReadableStream({
-      start(controller) {
+      start(controller: SSEController) {
         // Send initial connection message
         controller.enqueue(
           new TextEncoder().encode(`data: {"type":"connected"}\n\n`),
@@ -42,8 +41,11 @@ export function createEventsRoutes() {
               const eventData = `event: notes:${event.action}\ndata: ${JSON.stringify(event)}\n\n`;
               controller.enqueue(new TextEncoder().encode(eventData));
             }
-          } catch (error) {
-            console.error("Error in event handler:", error);
+          } catch (error: unknown) {
+            console.error(
+              "Error in event handler:",
+              error instanceof Error ? error.message : String(error),
+            );
           }
         };
 
@@ -56,28 +58,39 @@ export function createEventsRoutes() {
         const keepAlive = setInterval(() => {
           try {
             controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
-          } catch (error) {
+          } catch (error: unknown) {
+            console.error(
+              "Heartbeat error:",
+              error instanceof Error ? error.message : String(error),
+            );
             clearInterval(keepAlive);
           }
         }, 30000);
 
-        // Store cleanup function for later use
-        (controller as any).cleanup = () => {
+        // Store cleanup function
+        controller.cleanup = () => {
           appEvents.off("notes:created", eventHandler);
           appEvents.off("notes:updated", eventHandler);
           appEvents.off("notes:deleted", eventHandler);
           clearInterval(keepAlive);
         };
       },
-      cancel() {
+      cancel(controller: SSEController) {
         // Cleanup when client disconnects
-        if ((this as any).cleanup) {
-          (this as any).cleanup();
+        if (controller.cleanup) {
+          controller.cleanup();
         }
       },
     });
 
-    return new Response(readable);
+    // Set SSE headers directly on the Response object
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
   });
 
   return router;
