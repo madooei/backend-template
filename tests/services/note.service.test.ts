@@ -164,12 +164,16 @@ describe("NoteService", () => {
       const note = await noteService.create(data, regularUser);
 
       expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
         action: "created",
         data: note,
-        id: note.id,
-        user: regularUser,
-        visibility: "public",
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
         timestamp: expect.any(Date),
+        resourceType: "notes",
       });
     });
 
@@ -189,12 +193,16 @@ describe("NoteService", () => {
       );
 
       expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
         action: "updated",
         data: updatedNote,
-        id: updatedNote!.id,
-        user: regularUser,
-        visibility: "public",
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
         timestamp: expect.any(Date),
+        resourceType: "notes",
       });
     });
 
@@ -210,12 +218,16 @@ describe("NoteService", () => {
       await noteService.delete(note.id, regularUser);
 
       expect(eventSpy).toHaveBeenCalledWith({
+        id: expect.any(String),
         action: "deleted",
         data: note,
-        id: note.id,
-        user: regularUser,
-        visibility: "public",
+        user: {
+          id: regularUser.userId,
+          userId: regularUser.userId,
+          globalRole: regularUser.globalRole,
+        },
         timestamp: expect.any(Date),
+        resourceType: "notes",
       });
     });
 
@@ -280,7 +292,12 @@ describe("NoteService", () => {
         expect.objectContaining({
           action: "created",
           data: adminNote,
-          user: adminUser,
+          user: expect.objectContaining({
+            id: adminUser.userId,
+            userId: adminUser.userId,
+            globalRole: adminUser.globalRole,
+          }),
+          resourceType: "notes",
         }),
       );
 
@@ -288,7 +305,12 @@ describe("NoteService", () => {
         expect.objectContaining({
           action: "created",
           data: userNote,
-          user: regularUser,
+          user: expect.objectContaining({
+            id: regularUser.userId,
+            userId: regularUser.userId,
+            globalRole: regularUser.globalRole,
+          }),
+          resourceType: "notes",
         }),
       );
     });

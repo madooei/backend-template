@@ -12,10 +12,8 @@ class TestService extends BaseService {
     action: "created" | "updated" | "deleted",
     data: T,
     options?: {
-      id?: string | number;
-      user?: { id: string; [key: string]: unknown };
-      visibility?: "public" | "private" | "team";
-      ownerId?: string;
+      id?: string;
+      user?: { userId: string; [key: string]: unknown };
     },
   ) {
     this.emitEvent(action, data, options);
@@ -38,9 +36,12 @@ describe("BaseService", () => {
     testService.testEmitEvent("created", testData);
 
     expect(eventHandler).toHaveBeenCalledWith({
+      id: expect.any(String),
       action: "created",
       data: testData,
+      user: undefined,
       timestamp: expect.any(Date),
+      resourceType: "test",
     });
   });
 
@@ -51,18 +52,22 @@ describe("BaseService", () => {
     const testData = { id: "1", name: "Updated Item" };
     const options = {
       id: "1",
-      user: { id: "user1", name: "Test User" },
-      visibility: "public" as const,
-      ownerId: "owner1",
+      user: { userId: "user1", name: "Test User" },
     };
 
     testService.testEmitEvent("updated", testData, options);
 
     expect(eventHandler).toHaveBeenCalledWith({
+      id: "1",
       action: "updated",
       data: testData,
+      user: {
+        id: "user1",
+        userId: "user1",
+        name: "Test User",
+      },
       timestamp: expect.any(Date),
-      ...options,
+      resourceType: "test",
     });
   });
 
@@ -74,10 +79,12 @@ describe("BaseService", () => {
     testService.testEmitEvent("deleted", testData, { id: "1" });
 
     expect(eventHandler).toHaveBeenCalledWith({
+      id: "1",
       action: "deleted",
       data: testData,
-      id: "1",
+      user: undefined,
       timestamp: expect.any(Date),
+      resourceType: "test",
     });
   });
 
@@ -89,9 +96,12 @@ describe("BaseService", () => {
     testService.testEmitEvent("created", testData);
 
     expect(eventHandler).toHaveBeenCalledWith({
+      id: expect.any(String),
       action: "created",
       data: testData,
+      user: undefined,
       timestamp: expect.any(Date),
+      resourceType: "test",
     });
   });
 
@@ -101,7 +111,7 @@ describe("BaseService", () => {
 
     const testData = { id: "1", content: "Test content" };
     const complexUser = {
-      id: "user1",
+      userId: "user1",
       name: "John Doe",
       email: "john@example.com",
       roles: ["admin", "user"],
@@ -111,10 +121,19 @@ describe("BaseService", () => {
     testService.testEmitEvent("created", testData, { user: complexUser });
 
     expect(eventHandler).toHaveBeenCalledWith({
+      id: expect.any(String),
       action: "created",
       data: testData,
-      user: complexUser,
+      user: {
+        id: "user1",
+        userId: "user1",
+        name: "John Doe",
+        email: "john@example.com",
+        roles: ["admin", "user"],
+        metadata: { lastLogin: expect.any(Date) },
+      },
       timestamp: expect.any(Date),
+      resourceType: "test",
     });
   });
 

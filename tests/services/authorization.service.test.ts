@@ -129,4 +129,27 @@ describe("AuthorizationService", () => {
       ).resolves.toBe(false);
     });
   });
+
+  describe("canReceiveNoteEvent", () => {
+    it("allows admin to receive any note event", async () => {
+      const noteData = { createdBy: "other-user", content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(adminUser, noteData),
+      ).resolves.toBe(true);
+    });
+
+    it("allows owner to receive their note events", async () => {
+      const noteData = { createdBy: regularUser.userId, content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(regularUser, noteData),
+      ).resolves.toBe(true);
+    });
+
+    it("denies non-owner from receiving other users' note events", async () => {
+      const noteData = { createdBy: otherUser.userId, content: "Test note" };
+      await expect(
+        service.canReceiveNoteEvent(regularUser, noteData),
+      ).resolves.toBe(false);
+    });
+  });
 });

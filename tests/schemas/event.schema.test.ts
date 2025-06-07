@@ -5,13 +5,12 @@ describe("Event Schemas", () => {
   describe("serviceEventSchema", () => {
     it("should validate a complete service event", () => {
       const validEvent = {
+        id: "event-1",
         action: "created",
         data: { id: "1", content: "Test note" },
-        id: "1",
         user: { id: "user1", name: "John Doe" },
-        visibility: "public",
-        ownerId: "owner1",
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const result = serviceEventSchema.safeParse(validEvent);
@@ -23,9 +22,11 @@ describe("Event Schemas", () => {
 
     it("should validate minimal service event", () => {
       const minimalEvent = {
+        id: "event-2",
         action: "updated",
         data: { message: "Simple update" },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const result = serviceEventSchema.safeParse(minimalEvent);
@@ -37,8 +38,10 @@ describe("Event Schemas", () => {
 
     it("should validate all action types", () => {
       const baseEvent = {
+        id: "event-3",
         data: { id: "1" },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const actions = ["created", "updated", "deleted"] as const;
@@ -50,40 +53,39 @@ describe("Event Schemas", () => {
       });
     });
 
-    it("should validate all visibility types", () => {
+    it("should validate resourceType field", () => {
       const baseEvent = {
+        id: "event-4",
         action: "created",
         data: { id: "1" },
         timestamp: new Date(),
       };
 
-      const visibilities = ["public", "private", "team"] as const;
+      const resourceTypes = ["notes", "users", "projects"] as const;
 
-      visibilities.forEach((visibility) => {
-        const event = { ...baseEvent, visibility };
+      resourceTypes.forEach((resourceType) => {
+        const event = { ...baseEvent, resourceType };
         const result = serviceEventSchema.safeParse(event);
         expect(result.success).toBe(true);
       });
     });
 
-    it("should accept string or number id", () => {
+    it("should accept string id", () => {
       const baseEvent = {
         action: "created",
         data: { content: "test" },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       // Test string id
       const stringIdEvent = { ...baseEvent, id: "string-id" };
       expect(serviceEventSchema.safeParse(stringIdEvent).success).toBe(true);
-
-      // Test number id
-      const numberIdEvent = { ...baseEvent, id: 123 };
-      expect(serviceEventSchema.safeParse(numberIdEvent).success).toBe(true);
     });
 
     it("should allow user object with additional properties", () => {
       const event = {
+        id: "event-5",
         action: "created",
         data: { id: "1" },
         user: {
@@ -94,6 +96,7 @@ describe("Event Schemas", () => {
           metadata: { lastLogin: new Date() },
         },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const result = serviceEventSchema.safeParse(event);
@@ -111,12 +114,13 @@ describe("Event Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject invalid visibility", () => {
+    it("should require id field", () => {
       const invalidEvent = {
         action: "created",
         data: { id: "1" },
-        visibility: "invalid-visibility",
         timestamp: new Date(),
+        resourceType: "notes",
+        // Missing required id
       };
 
       const result = serviceEventSchema.safeParse(invalidEvent);
@@ -150,6 +154,7 @@ describe("Event Schemas", () => {
   describe("noteEventSchema", () => {
     it("should validate a complete note event", () => {
       const validNoteEvent = {
+        id: "event-note1",
         action: "created",
         data: {
           id: "note1",
@@ -157,10 +162,9 @@ describe("Event Schemas", () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        id: "note1",
         user: { id: "user1" },
-        visibility: "public",
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const result = noteEventSchema.safeParse(validNoteEvent);
@@ -172,12 +176,14 @@ describe("Event Schemas", () => {
 
     it("should validate minimal note event", () => {
       const minimalNoteEvent = {
+        id: "event-note2",
         action: "updated",
         data: {
           id: "note1",
           content: "Updated content",
         },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const result = noteEventSchema.safeParse(minimalNoteEvent);
@@ -213,15 +219,18 @@ describe("Event Schemas", () => {
 
     it("should allow optional createdAt and updatedAt", () => {
       const eventWithoutDates = {
+        id: "event-note3",
         action: "created",
         data: {
           id: "note1",
           content: "Test content",
         },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       const eventWithDates = {
+        id: "event-note4",
         action: "created",
         data: {
           id: "note1",
@@ -230,6 +239,7 @@ describe("Event Schemas", () => {
           updatedAt: new Date(),
         },
         timestamp: new Date(),
+        resourceType: "notes",
       };
 
       expect(noteEventSchema.safeParse(eventWithoutDates).success).toBe(true);
