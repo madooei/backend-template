@@ -18,7 +18,7 @@ export class NoteService extends BaseService {
 
   constructor(
     noteRepository?: INoteRepository,
-    authorizationService?: AuthorizationService
+    authorizationService?: AuthorizationService,
   ) {
     super("notes"); // Service name for events
 
@@ -37,7 +37,7 @@ export class NoteService extends BaseService {
 
   async getAll(
     params: NoteQueryParamsType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<PaginatedResultType<NoteType>> {
     if (this.authorizationService.isAdmin(user)) {
       return this.noteRepository.findAll(params);
@@ -47,7 +47,7 @@ export class NoteService extends BaseService {
 
   async getById(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -62,7 +62,7 @@ export class NoteService extends BaseService {
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
     const canCreate = await this.authorizationService.canCreateNote(user);
     if (!canCreate) throw new UnauthorizedError();
@@ -80,7 +80,7 @@ export class NoteService extends BaseService {
   async update(
     id: string,
     data: UpdateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType | null> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
@@ -105,7 +105,7 @@ export class NoteService extends BaseService {
 
   async delete(
     id: string,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<boolean> {
     const note = await this.noteRepository.findById(id);
     if (!note) {
