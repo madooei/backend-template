@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { createNoteRoutes } from "@/routes/note.router";
 import { createEventsRoutes } from "@/routes/events.router";
@@ -10,6 +11,7 @@ import { globalErrorHandler } from "@/errors";
 
 export const app = new Hono<AppEnv>();
 
+app.use("/*", cors()); // Enable CORS for all routes
 app.use(logger());
 
 app.get("/", (c) => {
