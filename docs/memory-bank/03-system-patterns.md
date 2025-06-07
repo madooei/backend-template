@@ -412,11 +412,15 @@ When adding new environment variables, make sure to document them in `.env.examp
 
 **Purpose**: Centralized event management for real-time updates and event-driven architecture education
 
-**⚠️ Known Issues & Improvements Needed**:
+**✅ Implementation Status**: Complete and Production Ready
 
-- **ServiceEvent Interface**: Current interface includes resource-specific fields (`visibility`, `ownerId`) that don't work generically across different entity types
-- **Authorization Pattern**: Permission logic should be moved from generic interface to resource-specific filtering functions
-- **Planned Refactoring**: Make ServiceEvent generic with `id`, `resourceType` fields and optional `user` field for system events
+**Key Design Decisions**:
+- **Generic Event Schema**: Uses `data: z.unknown()` for type flexibility across different entity types
+- **ReadableStream API**: Modern streaming approach with proper connection management
+- **Resource-based Authorization**: Event filtering follows same rules as CRUD permissions
+- **Educational Architecture**: Complete event-driven pattern demonstration for student learning
+
+**Documentation**: Comprehensive implementation guide available in `docs/guides/server-sent-events.md`
 
 #### Event Emitter Pattern
 

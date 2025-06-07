@@ -56,9 +56,11 @@ NODE_ENV=development
 # External Services
 AUTH_SERVICE_URL=http://localhost:3333
 
+# Database (MongoDB - Next Implementation Priority)
+# MONGODB_URI=mongodb://localhost:27017/backend-template
+# MONGODB_DB_NAME=backend-template
+
 # Database (examples for future use)
-# MONGODB_HOST=localhost
-# MONGODB_PORT=27017
 # POSTGRES_HOST=localhost
 # POSTGRES_PORT=5432
 ```
@@ -157,6 +159,11 @@ tests/
 - **Node.js EventEmitter**: Built-in event system for centralized event management
 - **Hono Streaming**: Built-in streaming support for Server-Sent Events (SSE)
 - **No additional dependencies required**: SSE implementation uses existing Hono.js streaming capabilities
+
+#### Database Integration Dependencies (Next Priority)
+
+- **mongodb**: Official MongoDB driver for Node.js (planned)
+- **@types/mongodb**: TypeScript definitions for MongoDB (planned)
 
 ### Development Dependencies
 
