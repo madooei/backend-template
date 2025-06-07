@@ -9,7 +9,7 @@ In modern web applications, users expect real-time updates. When one user create
 ### SSE vs WebSockets vs Polling
 
 | Method         | Use Case                 | Pros                                            | Cons                                |
-|----------------|--------------------------|-------------------------------------------------|-------------------------------------|
+| -------------- | ------------------------ | ----------------------------------------------- | ----------------------------------- |
 | **SSE**        | Server-to-client updates | Simple, automatic reconnection, HTTP-compatible | One-way communication only          |
 | **WebSockets** | Bi-directional real-time | Full duplex, low latency                        | More complex, connection management |
 | **Polling**    | Simple real-time needs   | Easy to implement                               | Inefficient, higher server load     |
@@ -119,7 +119,7 @@ export abstract class BaseService {
     options?: {
       id?: string;
       user?: { userId: string; [key: string]: unknown };
-    }
+    },
   ) {
     const eventUser = options?.user
       ? {
@@ -159,7 +159,7 @@ export class NoteService extends BaseService {
 
   async create(
     data: CreateNoteType,
-    user: AuthenticatedUserContextType
+    user: AuthenticatedUserContextType,
   ): Promise<NoteType> {
     // 1. Perform authorization checks
     const canCreate = await this.authorizationService.canCreateNote(user);
@@ -206,7 +206,7 @@ export function createEventsRoutes() {
       start(controller) {
         // Send initial connection confirmation
         controller.enqueue(
-          new TextEncoder().encode(`data: {"type":"connected"}\n\n`)
+          new TextEncoder().encode(`data: {"type":"connected"}\n\n`),
         );
 
         // Event handler with authorization filtering
@@ -215,7 +215,7 @@ export function createEventsRoutes() {
             const canReceive = await shouldUserReceiveEvent(
               event,
               currentUser,
-              authorizationService
+              authorizationService,
             );
             if (canReceive) {
               const eventData = `event: notes:${event.action}\ndata: ${JSON.stringify(event)}\n\n`;
@@ -347,15 +347,15 @@ this.emitEvent("created", note, {
 // Event handler checks authorization
 const canReceive = await authorizationService.canReceiveNoteEvent(
   currentUser,
-  event.data
+  event.data,
 );
 
 if (canReceive) {
   // Send to client
   controller.enqueue(
     new TextEncoder().encode(
-      `event: notes:created\ndata: ${JSON.stringify(event)}\n\n`
-    )
+      `event: notes:created\ndata: ${JSON.stringify(event)}\n\n`,
+    ),
   );
 }
 ```
@@ -548,7 +548,7 @@ function useSSE() {
         eventSource?.removeEventListener(eventType, handler);
       };
     },
-    [eventSource]
+    [eventSource],
   );
 
   return { addEventListener };

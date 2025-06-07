@@ -14,6 +14,7 @@
 **Documentation**: Comprehensive guide available in `docs/guides/server-sent-events.md`
 
 **Key Achievements**:
+
 - **Event System Architecture**: Central event emitter with TypeScript interfaces and Zod validation
 - **BaseService Pattern**: Consistent event emission across all services with proper inheritance
 - **SSE Endpoint**: Authenticated streaming with ReadableStream API and proper authorization filtering
@@ -21,6 +22,7 @@
 - **Educational Value**: Complete event-driven architecture demonstration for student learning
 
 **Files Implemented**:
+
 - `src/events/event-emitter.ts` - Central event system with ServiceEventType interface
 - `src/events/base.service.ts` - Base service class with protected emitEvent method
 - `src/schemas/event.schema.ts` - Event schemas with generic data field and resource typing
@@ -29,6 +31,7 @@
 - Comprehensive test suite with full coverage
 
 **Architecture Implemented**:
+
 ```
 User Action → Service Layer → Event Emission → SSE Router → Connected Clients
      ↓              ↓              ↓              ↓              ↓
@@ -36,6 +39,7 @@ Business Logic → BaseService → EventEmitter → Authorization → Real-time 
 ```
 
 **Key Technical Decisions**:
+
 - **Generic Event Schema**: `data: z.unknown()` allows different entity types while maintaining type safety
 - **ReadableStream API**: Modern streaming approach instead of Hono's deprecated stream() function
 - **Resource-based Authorization**: Event filtering follows same rules as CRUD permissions
@@ -50,6 +54,7 @@ Business Logic → BaseService → EventEmitter → Authorization → Real-time 
    **Objective**: Replace mock repository with real MongoDB implementation to teach database persistence concepts
 
    **Implementation Plan**:
+
    - Create `src/repositories/mongodb/note.mongodb.repository.ts` implementing `INoteRepository`
    - Add MongoDB connection management and configuration
    - Implement proper data mapping between MongoDB documents and domain entities
@@ -58,6 +63,7 @@ Business Logic → BaseService → EventEmitter → Authorization → Real-time 
    - Create comprehensive test suite with test database
 
    **Files to Create/Modify**:
+
    - `src/repositories/mongodb/note.mongodb.repository.ts` - MongoDB implementation
    - `src/config/database.ts` - Database connection management
    - `src/env.ts` - Add MongoDB environment variables
@@ -66,6 +72,7 @@ Business Logic → BaseService → EventEmitter → Authorization → Real-time 
    - `docker-compose.yml` - Add MongoDB service for development
 
    **Educational Goals**:
+
    - Demonstrate NoSQL database integration patterns
    - Teach document-based data modeling vs relational approaches
    - Show proper connection pooling and error handling

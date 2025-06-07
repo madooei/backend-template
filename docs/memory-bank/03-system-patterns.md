@@ -415,6 +415,7 @@ When adding new environment variables, make sure to document them in `.env.examp
 **✅ Implementation Status**: Complete and Production Ready
 
 **Key Design Decisions**:
+
 - **Generic Event Schema**: Uses `data: z.unknown()` for type flexibility across different entity types
 - **ReadableStream API**: Modern streaming approach with proper connection management
 - **Resource-based Authorization**: Event filtering follows same rules as CRUD permissions
