@@ -14,7 +14,7 @@ class TestService extends BaseService {
     options?: {
       id?: string;
       user?: { userId: string; [key: string]: unknown };
-    },
+    }
   ) {
     this.emitEvent(action, data, options);
   }
@@ -145,7 +145,7 @@ describe("BaseService", () => {
 
     testService.testEmitEvent("created", testData);
     // Small delay to ensure different timestamps
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     testService.testEmitEvent("created", testData);
 
     expect(eventHandler).toHaveBeenCalledTimes(2);
