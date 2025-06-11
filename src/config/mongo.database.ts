@@ -1,6 +1,5 @@
 import { MongoClient, Db } from "mongodb";
 import { env } from "@/env";
-import { MongoDbNoteRepository } from "@/repositories/mongodb/note.mongodb.repository";
 
 // Construct the connection URI with optional authentication
 let MONGODB_URI = `mongodb://${env.MONGODB_HOST}:${env.MONGODB_PORT}/${env.MONGODB_DATABASE}`;
@@ -17,16 +16,6 @@ if (env.MONGODB_USER && env.MONGODB_PASSWORD) {
     `?` +
     `authSource=admin`;
 }
-
-// A registry for all repositories that need indexes
-interface IndexableRepository {
-  createIndexes(db: Db): Promise<void>;
-}
-
-const repositoryRegistry: Array<IndexableRepository> = [
-  MongoDbNoteRepository,
-  // Add new repositories here
-];
 
 class DatabaseConnection {
   private client: MongoClient | null = null;
@@ -46,10 +35,6 @@ class DatabaseConnection {
       // Set the database instance
       this.db = this.client.db(env.MONGODB_DATABASE);
       console.log(`📚 Using database: ${env.MONGODB_DATABASE}`);
-
-      // Optionally create indexes here
-      await this.createIndexes();
-      console.log("✅ Indexes created successfully");
 
       // Return the database instance
       return this.db;
@@ -77,25 +62,6 @@ class DatabaseConnection {
 
   isConnected(): boolean {
     return this.db !== null;
-  }
-
-  async createIndexes(): Promise<void> {
-    if (!this.db) {
-      throw new Error("Database not connected. Call connect() first.");
-    }
-
-    console.log("Creating indexes for all collections...");
-
-    try {
-      await Promise.all(
-        repositoryRegistry.map((repo) => repo.createIndexes(this.db!))
-      );
-
-      console.log("✅ All repository indexes created successfully");
-    } catch (error) {
-      console.error("❌ Failed to create indexes:", error);
-      throw error;
-    }
   }
 }
 

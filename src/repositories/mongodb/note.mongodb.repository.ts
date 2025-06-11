@@ -38,23 +38,26 @@ export class MongoDbNoteRepository implements INoteRepository {
     if (!this.collection) {
       const db: Db = await getDatabase();
       this.collection = db.collection<MongoNoteDocument>("notes");
+      await this.createIndexes();
+      console.log("📚 Notes collection initialized");
     }
     return this.collection;
   }
 
-  // Static method to create indexes - can be called without instantiating the repository
-  static async createIndexes(db: Db): Promise<void> {
-    const collection = db.collection<MongoNoteDocument>("notes");
-
+  // createIndex is idempotent, so we can safely call it multiple times
+  private async createIndexes(): Promise<void> {
     console.log("Creating indexes for notes collection...");
 
     await Promise.all([
-      collection.createIndex({ createdBy: 1 }, { name: "notes_createdBy" }),
-      collection.createIndex(
+      this.collection.createIndex(
+        { createdBy: 1 },
+        { name: "notes_createdBy" }
+      ),
+      this.collection.createIndex(
         { createdAt: -1 },
         { name: "notes_createdAt_desc" }
       ),
-      collection.createIndex(
+      this.collection.createIndex(
         { content: "text" },
         { name: "notes_content_text" }
       ),
