@@ -2,7 +2,7 @@ import { Server } from "net";
 import { serve } from "@hono/node-server";
 import { app } from "@/app";
 import { env } from "@/env";
-import { database } from "@/config/mongo.database";
+import { database } from "@/config/mongodb.setup";
 
 // Set up graceful shutdown
 const setupGracefulShutdown = (server: Server) => {
