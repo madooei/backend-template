@@ -15,7 +15,7 @@ import {
 } from "@/schemas/shared.schema";
 import type { INoteRepository } from "@/repositories/note.repository";
 import type { UserIdType } from "@/schemas/user.schemas";
-import { getDatabase } from "@/config/mongo.database";
+import { getDatabase } from "@/config/mongodb.setup";
 
 // It's essentially our Note schema but expects its primary key (_id) to be an ObjectId.
 // The 'id' field in our Note domain model will be derived from _id.toHexString().
