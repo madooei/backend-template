@@ -6,7 +6,7 @@ let testDb: Db;
 let testClient: MongoClient;
 
 // Mock database connection module
-vi.mock("@/config/mongo.database", () => {
+vi.mock("@/config/mongodb.setup", () => {
   return {
     database: {
       connect: vi.fn(async () => {
@@ -58,12 +58,6 @@ global.setupTestDatabase = async () => {
   // Set the test database instances
   testDb = db;
   testClient = client;
-
-  // Create indexes for the repository
-  const { MongoDbNoteRepository } = await import(
-    "@/repositories/mongodb/note.mongodb.repository"
-  );
-  await MongoDbNoteRepository.createIndexes(db);
 
   return { db, client };
 };
