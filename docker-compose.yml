@@ -10,15 +10,59 @@ services:
       - .:/app:delegated
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
     environment:
       - NODE_ENV=development
+      - PORT=${PORT}
+      - MONGODB_HOST=mongo_db # Use service name instead of localhost
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MONGODB_USER=${MONGODB_USER}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+    depends_on:
+      mongo_db:
+        condition: service_healthy
     command: /bin/sh -c "sleep infinity"
     restart: unless-stopped
-    user: node
+    networks:
+      - app-network
+
+  mongo_db:
+    image: mongo:latest
+    env_file:
+      - .env
+    ports:
+      - "${MONGODB_PORT}:${MONGODB_PORT}"
+    volumes:
+      - mongodb_data:/data/db # Where MongoDB stores its data by default
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--authenticationDatabase=admin",
+          "-u",
+          "${MONGODB_USER}",
+          "-p",
+          "${MONGODB_PASSWORD}",
+          "--eval",
+          "db.runCommand('ping').ok",
+          "--quiet",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mongodb_data:
