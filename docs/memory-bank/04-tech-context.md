@@ -56,9 +56,12 @@ NODE_ENV=development
 # External Services
 AUTH_SERVICE_URL=http://localhost:3333
 
-# Database (MongoDB - Next Implementation Priority)
-# MONGODB_URI=mongodb://localhost:27017/backend-template
-# MONGODB_DB_NAME=backend-template
+# MongoDB URI Configuration
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_DATABASE=backend-template
+MONGODB_USER=admin
+MONGODB_PASSWORD=admin
 
 # Database (examples for future use)
 # POSTGRES_HOST=localhost
