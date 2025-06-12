@@ -46,10 +46,10 @@ describe("env error handling", () => {
     // Verify console.error was called twice
     expect(consoleErrorMock).toHaveBeenCalledTimes(2);
     expect(consoleErrorMock.mock.calls[0][0]).toBe(
-      "❌ Invalid environment variables after mapping:"
+      "❌ Invalid environment variables after mapping:",
     );
     expect(consoleErrorMock.mock.calls[1][0]).toBe(
-      "Mapped environment data passed to Zod:"
+      "Mapped environment data passed to Zod:",
     );
 
     // Verify process.exit was called with code 1

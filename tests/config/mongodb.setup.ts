@@ -12,7 +12,7 @@ vi.mock("@/config/mongodb.setup", () => {
       connect: vi.fn(async () => {
         if (!testDb) {
           throw new Error(
-            "Test database not initialized. Call setupTestDatabase() first."
+            "Test database not initialized. Call setupTestDatabase() first.",
           );
         }
         return testDb;
@@ -23,7 +23,7 @@ vi.mock("@/config/mongodb.setup", () => {
       getDb: vi.fn(() => {
         if (!testDb) {
           throw new Error(
-            "Test database not initialized. Call setupTestDatabase() first."
+            "Test database not initialized. Call setupTestDatabase() first.",
           );
         }
         return testDb;
@@ -33,7 +33,7 @@ vi.mock("@/config/mongodb.setup", () => {
     getDatabase: vi.fn(async () => {
       if (!testDb) {
         throw new Error(
-          "Test database not initialized. Call setupTestDatabase() first."
+          "Test database not initialized. Call setupTestDatabase() first.",
         );
       }
       return testDb;

@@ -208,7 +208,7 @@ class DatabaseConnection {
 
   async connect(): Promise<Db> {
     if (this.db) return this.db;
-    
+
     this.client = new MongoClient(MONGODB_URI);
     await this.client.connect();
     this.db = this.client.db(env.MONGODB_DATABASE);

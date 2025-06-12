@@ -171,12 +171,14 @@ tests/
 **Key Technology Decisions**:
 
 - **Direct MongoDB Driver**: Uses `mongodb` package directly instead of Mongoose for:
+
   - Educational transparency - students see actual database operations
   - Custom repository pattern implementation
   - Full control over data mapping and validation
   - Reduced abstraction layers for learning purposes
 
 - **Zod Schema Validation**: Uses Zod schemas instead of MongoDB/Mongoose schemas for:
+
   - Single source of truth for data validation
   - Consistent validation across all layers
   - Type safety with runtime validation

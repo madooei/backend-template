@@ -47,7 +47,7 @@ async function startServer() {
       },
       (info) => {
         console.log(`Server is running on http://localhost:${info.port}`);
-      }
+      },
     );
 
     setupGracefulShutdown(server);

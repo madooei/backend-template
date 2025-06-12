@@ -103,7 +103,7 @@ describe("MongoDbNoteRepository", () => {
       await repository.create({ content: "Second note" }, "other-user");
       await repository.create(
         { content: "Third note with search term" },
-        testUserId
+        testUserId,
       );
     });
 
@@ -127,7 +127,7 @@ describe("MongoDbNoteRepository", () => {
       expect(result.data).toHaveLength(2);
       expect(result.total).toBe(2);
       expect(result.data.every((note) => note.createdBy === testUserId)).toBe(
-        true
+        true,
       );
     });
 
@@ -177,7 +177,7 @@ describe("MongoDbNoteRepository", () => {
       const note2 = await repository.create({ content: "Note 2" }, testUserId);
       const note3 = await repository.create(
         { content: "Note 3" },
-        "other-user"
+        "other-user",
       );
       noteIds = [note1.id, note2.id, note3.id];
     });
@@ -186,12 +186,12 @@ describe("MongoDbNoteRepository", () => {
       const params: NoteQueryParamsType = {};
       const result = await repository.findAllByIds(
         [noteIds[0], noteIds[1]],
-        params
+        params,
       );
 
       expect(result.data).toHaveLength(2);
       expect(result.data.map((note) => note.id)).toEqual(
-        expect.arrayContaining([noteIds[0], noteIds[1]])
+        expect.arrayContaining([noteIds[0], noteIds[1]]),
       );
     });
 
@@ -203,7 +203,7 @@ describe("MongoDbNoteRepository", () => {
 
       expect(result.data).toHaveLength(2);
       expect(result.data.every((note) => note.createdBy === testUserId)).toBe(
-        true
+        true,
       );
     });
 
@@ -211,7 +211,7 @@ describe("MongoDbNoteRepository", () => {
       const params: NoteQueryParamsType = {};
       const result = await repository.findAllByIds(
         ["non-existent-1", "non-existent-2"],
-        params
+        params,
       );
 
       expect(result.data).toHaveLength(0);
@@ -225,7 +225,7 @@ describe("MongoDbNoteRepository", () => {
     beforeEach(async () => {
       const note = await repository.create(
         { content: "Original content" },
-        testUserId
+        testUserId,
       );
       noteId = note.id;
     });
@@ -249,7 +249,7 @@ describe("MongoDbNoteRepository", () => {
       });
       expect(result).not.toBeNull();
       expect(result!.updatedAt?.getTime()).toBeGreaterThanOrEqual(
-        result!.createdAt?.getTime() || 0
+        result!.createdAt?.getTime() || 0,
       );
     });
 
@@ -282,7 +282,7 @@ describe("MongoDbNoteRepository", () => {
     beforeEach(async () => {
       const note = await repository.create(
         { content: "Note to delete" },
-        testUserId
+        testUserId,
       );
       noteId = note.id;
     });
@@ -328,7 +328,7 @@ describe("MongoDbNoteRepository", () => {
           "notes_createdBy",
           "notes_createdAt_desc",
           "notes_content_text",
-        ])
+        ]),
       );
     });
   });
