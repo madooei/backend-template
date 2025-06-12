@@ -23,6 +23,7 @@ services:
       mongo_db:
         condition: service_healthy
     command: /bin/sh -c "sleep infinity"
+    user: node
     restart: unless-stopped
     networks:
       - app-network

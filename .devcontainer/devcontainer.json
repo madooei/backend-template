@@ -12,7 +12,8 @@
         "ms-vscode.js-debug-nightly",
         "esbenp.prettier-vscode",
         "ms-vscode.vscode-typescript-next",
-        "vitest.explorer"
+        "vitest.explorer",
+        "mongodb.mongodb-vscode"
       ],
       "settings": {
         "editor.formatOnSave": true,

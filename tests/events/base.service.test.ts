@@ -14,7 +14,7 @@ class TestService extends BaseService {
     options?: {
       id?: string;
       user?: { userId: string; [key: string]: unknown };
-    },
+    }
   ) {
     this.emitEvent(action, data, options);
   }
@@ -144,7 +144,9 @@ describe("BaseService", () => {
     const testData = { id: "1", content: "Test" };
 
     testService.testEmitEvent("created", testData);
-    // Small delay to ensure different timestamps
+    // Small delay to ensure different timestamps.
+    // The 100ms delay ensures that the timestamps of the two events are unique.
+    // If test runtime becomes a concern, this value can be adjusted or replaced with a more efficient mechanism.
     await new Promise((resolve) => setTimeout(resolve, 100));
     testService.testEmitEvent("created", testData);
 
