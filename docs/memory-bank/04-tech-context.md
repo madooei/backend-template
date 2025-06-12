@@ -163,10 +163,30 @@ tests/
 - **Hono Streaming**: Built-in streaming support for Server-Sent Events (SSE)
 - **No additional dependencies required**: SSE implementation uses existing Hono.js streaming capabilities
 
-#### Database Integration Dependencies (Next Priority)
+#### Database Integration Dependencies
 
-- **mongodb**: Official MongoDB driver for Node.js (planned)
-- **@types/mongodb**: TypeScript definitions for MongoDB (planned)
+- **mongodb**: Official MongoDB driver for Node.js - Direct driver usage for educational transparency
+- **mongodb-memory-server**: In-memory MongoDB for testing - Provides isolated test environment
+
+**Key Technology Decisions**:
+
+- **Direct MongoDB Driver**: Uses `mongodb` package directly instead of Mongoose for:
+  - Educational transparency - students see actual database operations
+  - Custom repository pattern implementation
+  - Full control over data mapping and validation
+  - Reduced abstraction layers for learning purposes
+
+- **Zod Schema Validation**: Uses Zod schemas instead of MongoDB/Mongoose schemas for:
+  - Single source of truth for data validation
+  - Consistent validation across all layers
+  - Type safety with runtime validation
+  - Educational clarity in data flow
+
+- **MongoDB Memory Server**: Uses `mongodb-memory-server` for testing to:
+  - Provide isolated test environments
+  - Enable fast, reliable integration tests
+  - Eliminate external database dependencies in CI/CD
+  - Teach proper testing strategies for database code
 
 ### Development Dependencies
 
