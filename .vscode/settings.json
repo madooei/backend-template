@@ -23,5 +23,5 @@
       "fileMatch": ["package.json", "tsup.config.json"]
     }
   ],
-  "cSpell.words": ["clinerules", "mockdb", "uuidv"]
+  "cSpell.words": ["clinerules", "dbaeumer", "esbenp", "mockdb", "uuidv"]
 }

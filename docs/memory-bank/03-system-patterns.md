@@ -131,6 +131,100 @@ export class MockDbNoteRepository implements INoteRepository {
 }
 ```
 
+#### MongoDB Repository Implementation Patterns
+
+**✅ Production Implementation**: `src/repositories/mongodb/note.mongodb.repository.ts`
+
+**Key Design Decisions**:
+
+- **Direct MongoDB Driver**: Uses `mongodb` package directly instead of Mongoose for educational transparency and custom repository control
+- **Schema Validation**: Uses Zod schemas for data validation instead of MongoDB/Mongoose schemas, maintaining single source of truth
+- **Document Mapping**: Clear separation between MongoDB documents and domain entities with explicit mapping functions
+- **Lazy Collection Loading**: Collections are initialized on first use, not at instantiation time
+- **Index Management**: Automatic index creation for performance optimization (idempotent operations)
+
+**MongoDB-Specific Patterns**:
+
+```typescript
+// MongoDB document interface (internal to repository)
+interface MongoNoteDocument extends Omit<NoteType, "id" | "createdAt" | "updatedAt"> {
+  _id?: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Document to Entity mapping with Zod validation
+private mapDocumentToEntity(doc: WithId<MongoNoteDocument>): NoteType {
+  const { _id, ...restOfDoc } = doc;
+  return noteSchema.parse({
+    ...restOfDoc,
+    id: _id.toHexString(), // Convert ObjectId to string
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  });
+}
+
+// Entity to Document mapping for creation
+private mapEntityToDocument(
+  data: CreateNoteType,
+  createdByUserId: UserIdType
+): Omit<MongoNoteDocument, "_id"> {
+  const now = new Date();
+  return {
+    content: data.content,
+    createdBy: createdByUserId,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+```
+
+**Performance Optimization Patterns**:
+
+```typescript
+// Automatic index creation (idempotent)
+private async createIndexes(collection: Collection<MongoNoteDocument>): Promise<void> {
+  await Promise.all([
+    collection.createIndex({ createdBy: 1 }, { name: "notes_createdBy" }),
+    collection.createIndex({ createdAt: -1 }, { name: "notes_createdAt_desc" }),
+    collection.createIndex({ content: "text" }, { name: "notes_content_text" }),
+  ]);
+}
+
+// Efficient pagination and filtering
+const [documents, total] = await Promise.all([
+  collection.find(filter).sort(sort).skip(skip).limit(limit).toArray(),
+  collection.countDocuments(filter),
+]);
+```
+
+**Connection Management Pattern**:
+
+```typescript
+// Singleton database connection with graceful shutdown
+class DatabaseConnection {
+  private client: MongoClient | null = null;
+  private db: Db | null = null;
+
+  async connect(): Promise<Db> {
+    if (this.db) return this.db;
+
+    this.client = new MongoClient(MONGODB_URI);
+    await this.client.connect();
+    this.db = this.client.db(env.MONGODB_DATABASE);
+    return this.db;
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.client) {
+      await this.client.close();
+      this.client = null;
+      this.db = null;
+    }
+  }
+}
+```
+
 ### 3. Service Layer (`src/services/`)
 
 - **Purpose**: Business logic, authorization, and data orchestration

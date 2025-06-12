@@ -6,11 +6,15 @@ import { createEventsRoutes } from "@/routes/events.router";
 import { NoteController } from "@/controllers/note.controller";
 import { NoteService } from "@/services/note.service";
 import { MockDbNoteRepository } from "@/repositories/mockdb/note.mockdb.repository";
+import { MongoDbNoteRepository } from "@/repositories/mongodb/note.mongodb.repository";
 import type { AppEnv } from "@/schemas/app-env.schema";
 import { globalErrorHandler } from "@/errors";
+import { env } from "@/env";
 
 export const app = new Hono<AppEnv>();
 
+// We may want to let the API Gateway handle CORS and logging,
+// but for development purposes, we can enable it here
 app.use("/*", cors()); // Enable CORS for all routes
 app.use(logger());
 
@@ -20,7 +24,11 @@ app.get("/", (c) => {
 });
 
 // Note routes
-const noteService = new NoteService(new MockDbNoteRepository());
+const noteRepository =
+  env.NODE_ENV === "test"
+    ? new MockDbNoteRepository()
+    : new MongoDbNoteRepository();
+const noteService = new NoteService(noteRepository);
 const noteController = new NoteController(noteService);
 app.route("/notes", createNoteRoutes({ noteController }));
 

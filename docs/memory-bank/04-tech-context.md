@@ -56,9 +56,12 @@ NODE_ENV=development
 # External Services
 AUTH_SERVICE_URL=http://localhost:3333
 
-# Database (MongoDB - Next Implementation Priority)
-# MONGODB_URI=mongodb://localhost:27017/backend-template
-# MONGODB_DB_NAME=backend-template
+# MongoDB URI Configuration
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_DATABASE=backend-template
+MONGODB_USER=admin
+MONGODB_PASSWORD=admin
 
 # Database (examples for future use)
 # POSTGRES_HOST=localhost
@@ -160,10 +163,32 @@ tests/
 - **Hono Streaming**: Built-in streaming support for Server-Sent Events (SSE)
 - **No additional dependencies required**: SSE implementation uses existing Hono.js streaming capabilities
 
-#### Database Integration Dependencies (Next Priority)
+#### Database Integration Dependencies
 
-- **mongodb**: Official MongoDB driver for Node.js (planned)
-- **@types/mongodb**: TypeScript definitions for MongoDB (planned)
+- **mongodb**: Official MongoDB driver for Node.js - Direct driver usage for educational transparency
+- **mongodb-memory-server**: In-memory MongoDB for testing - Provides isolated test environment
+
+**Key Technology Decisions**:
+
+- **Direct MongoDB Driver**: Uses `mongodb` package directly instead of Mongoose for:
+
+  - Educational transparency - students see actual database operations
+  - Custom repository pattern implementation
+  - Full control over data mapping and validation
+  - Reduced abstraction layers for learning purposes
+
+- **Zod Schema Validation**: Uses Zod schemas instead of MongoDB/Mongoose schemas for:
+
+  - Single source of truth for data validation
+  - Consistent validation across all layers
+  - Type safety with runtime validation
+  - Educational clarity in data flow
+
+- **MongoDB Memory Server**: Uses `mongodb-memory-server` for testing to:
+  - Provide isolated test environments
+  - Enable fast, reliable integration tests
+  - Eliminate external database dependencies in CI/CD
+  - Teach proper testing strategies for database code
 
 ### Development Dependencies
 
