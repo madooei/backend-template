@@ -19,8 +19,10 @@ import { getDatabase } from "@/config/mongodb.setup";
 
 // It's essentially our Note schema but expects its primary key (_id) to be an ObjectId.
 // The 'id' field in our Note domain model will be derived from _id.toHexString().
-interface MongoNoteDocument
-  extends Omit<NoteType, "id" | "createdAt" | "updatedAt"> {
+interface MongoNoteDocument extends Omit<
+  NoteType,
+  "id" | "createdAt" | "updatedAt"
+> {
   _id?: ObjectId;
   createdAt: Date;
   updatedAt: Date;

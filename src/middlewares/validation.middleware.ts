@@ -100,7 +100,10 @@ export const validate = (
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors;
       const fieldErrorMessages = Object.entries(fieldErrors)
-        .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
+        .map(
+          ([field, errors]) =>
+            `${field}: ${(errors as string[] | undefined)?.join(", ")}`,
+        )
         .join("; ");
       throw new BadRequestError(
         `Validation failed for ${source}. ${fieldErrorMessages}`,
