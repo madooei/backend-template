@@ -14,7 +14,7 @@ class TestService extends BaseService {
     options?: {
       id?: string;
       user?: { userId: string; [key: string]: unknown };
-    }
+    },
   ) {
     this.emitEvent(action, data, options);
   }

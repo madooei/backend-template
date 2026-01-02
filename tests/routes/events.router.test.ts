@@ -46,9 +46,9 @@ describe("Events Router (E2E Style with Mock Dependencies)", () => {
       isAdmin: vi.fn().mockReturnValue(false),
     } as any;
 
-    vi.mocked(AuthorizationService).mockImplementation(
-      () => mockAuthorizationService,
-    );
+    vi.mocked(AuthorizationService).mockImplementation(function () {
+      return mockAuthorizationService;
+    } as any);
 
     app = new Hono<AppEnv>();
     app.onError(globalErrorHandler);
