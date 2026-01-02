@@ -1,0 +1,329 @@
+# MongoDB Repository Reference Implementation
+
+Complete implementation example for a MongoDB repository.
+
+## Full Example: `note.mongodb.repository.ts`
+
+```typescript
+import { Collection, Db, ObjectId } from "mongodb";
+import type { WithId, Filter, Sort } from "mongodb";
+import type {
+  NoteType,
+  CreateNoteType,
+  UpdateNoteType,
+  NoteQueryParamsType,
+  NoteIdType,
+} from "@/schemas/note.schema";
+import { noteSchema } from "@/schemas/note.schema";
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  type PaginatedResultType,
+} from "@/schemas/shared.schema";
+import type { INoteRepository } from "@/repositories/note.repository";
+import type { UserIdType } from "@/schemas/user.schemas";
+import { getDatabase } from "@/config/mongodb.setup";
+
+// MongoDB document interface (internal to repository)
+// Maps domain model to MongoDB structure
+interface MongoNoteDocument extends Omit<
+  NoteType,
+  "id" | "createdAt" | "updatedAt"
+> {
+  _id?: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class MongoDbNoteRepository implements INoteRepository {
+  private collection: Collection<MongoNoteDocument> | null = null;
+
+  // Lazy load the collection when needed
+  private async getCollection(): Promise<Collection<MongoNoteDocument>> {
+    if (!this.collection) {
+      const db: Db = await getDatabase();
+      this.collection = db.collection<MongoNoteDocument>("notes");
+      await this.createIndexes(this.collection);
+      console.log("📚 Notes collection initialized");
+    }
+    return this.collection;
+  }
+
+  // createIndex is idempotent, so we can safely call it multiple times
+  private async createIndexes(
+    collection: Collection<MongoNoteDocument>,
+  ): Promise<void> {
+    console.log("Creating indexes for notes collection...");
+
+    await Promise.all([
+      collection.createIndex({ createdBy: 1 }, { name: "notes_createdBy" }),
+      collection.createIndex(
+        { createdAt: -1 },
+        { name: "notes_createdAt_desc" },
+      ),
+      collection.createIndex(
+        { content: "text" },
+        { name: "notes_content_text" },
+      ),
+    ]);
+
+    console.log("✅ Notes indexes created successfully");
+  }
+
+  // Map MongoDB document to domain entity with Zod validation
+  private mapDocumentToEntity(doc: WithId<MongoNoteDocument>): NoteType {
+    const { _id, ...restOfDoc } = doc;
+    return noteSchema.parse({
+      ...restOfDoc,
+      id: _id.toHexString(),
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
+  }
+
+  // Map domain data to MongoDB document
+  private mapEntityToDocument(
+    data: CreateNoteType,
+    createdByUserId: UserIdType,
+  ): Omit<MongoNoteDocument, "_id"> {
+    const now = new Date();
+    return {
+      content: data.content,
+      createdBy: createdByUserId,
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
+  async findAll(
+    params: NoteQueryParamsType,
+  ): Promise<PaginatedResultType<NoteType>> {
+    const collection = await this.getCollection();
+
+    // Build MongoDB query filter
+    const filter: Filter<MongoNoteDocument> = {};
+
+    if (params.createdBy) {
+      filter.createdBy = params.createdBy;
+    }
+
+    if (params.search?.trim()) {
+      // Use MongoDB text search for better performance
+      filter.$text = { $search: params.search.trim() };
+    }
+
+    // Calculate pagination
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_LIMIT;
+    const skip = (page - 1) * limit;
+
+    // Build sort criteria
+    const sortBy = params.sortBy ?? "createdAt";
+    const sortOrder = params.sortOrder === "asc" ? 1 : -1;
+    const sort: Sort = { [sortBy]: sortOrder };
+
+    // Execute queries in parallel
+    const [documents, total] = await Promise.all([
+      collection.find(filter).sort(sort).skip(skip).limit(limit).toArray(),
+      collection.countDocuments(filter),
+    ]);
+
+    // Map documents to entities
+    const notes = documents.map((doc) => this.mapDocumentToEntity(doc));
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: notes,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
+  }
+
+  async findById(id: NoteIdType): Promise<NoteType | null> {
+    // Validate ObjectId format
+    if (!ObjectId.isValid(id)) {
+      return null;
+    }
+
+    const collection = await this.getCollection();
+    const document = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!document) {
+      return null;
+    }
+
+    return this.mapDocumentToEntity(document);
+  }
+
+  async create(
+    data: CreateNoteType,
+    createdByUserId: UserIdType,
+  ): Promise<NoteType> {
+    const collection = await this.getCollection();
+    const documentToInsert = this.mapEntityToDocument(data, createdByUserId);
+
+    const result = await collection.insertOne(documentToInsert);
+
+    if (!result.insertedId) {
+      throw new Error(
+        "Note creation failed, no ObjectId generated by database.",
+      );
+    }
+
+    // Return the created note with the generated ID
+    return noteSchema.parse({
+      ...documentToInsert,
+      id: result.insertedId.toHexString(),
+    });
+  }
+
+  async update(id: NoteIdType, data: UpdateNoteType): Promise<NoteType | null> {
+    if (!ObjectId.isValid(id)) {
+      return null;
+    }
+
+    const collection = await this.getCollection();
+
+    const updateDoc = {
+      $set: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    };
+
+    const result = await collection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      updateDoc,
+      { returnDocument: "after" },
+    );
+
+    if (!result) {
+      return null;
+    }
+
+    return this.mapDocumentToEntity(result);
+  }
+
+  async remove(id: NoteIdType): Promise<boolean> {
+    if (!ObjectId.isValid(id)) {
+      return false;
+    }
+
+    const collection = await this.getCollection();
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    return result.deletedCount > 0;
+  }
+
+  // Helper method for testing: clear all notes
+  async clear(): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.deleteMany({});
+  }
+
+  // Helper method for testing: get collection stats
+  async getStats(): Promise<{ count: number; indexes: string[] }> {
+    const collection = await this.getCollection();
+    const count = await collection.countDocuments();
+    const indexes = await collection.listIndexes().toArray();
+    return {
+      count,
+      indexes: indexes.map((idx) => idx.name),
+    };
+  }
+}
+```
+
+## MongoDB Connection Setup
+
+The repository uses a database connection singleton. Here's the setup pattern:
+
+**File**: `src/config/mongodb.setup.ts`
+
+```typescript
+import { MongoClient, Db } from "mongodb";
+import { env } from "@/env";
+
+// Construct the connection URI with optional authentication
+let MONGODB_URI = `mongodb://${env.MONGODB_HOST}:${env.MONGODB_PORT}/${env.MONGODB_DATABASE}`;
+
+// Add credentials and authSource only if username and password are provided
+if (env.MONGODB_USER && env.MONGODB_PASSWORD) {
+  MONGODB_URI =
+    `mongodb://` +
+    `${env.MONGODB_USER}:${env.MONGODB_PASSWORD}` +
+    `@` +
+    `${env.MONGODB_HOST}:${env.MONGODB_PORT}` +
+    `/` +
+    `${env.MONGODB_DATABASE}` +
+    `?` +
+    `authSource=admin`;
+}
+
+class DatabaseConnection {
+  private client: MongoClient | null = null;
+  private db: Db | null = null;
+
+  async connect(): Promise<Db> {
+    if (this.db) {
+      return this.db;
+    }
+
+    try {
+      console.log("🔌 Connecting to MongoDB...");
+      this.client = new MongoClient(MONGODB_URI);
+      await this.client.connect();
+      console.log("✅ Connected to MongoDB successfully");
+
+      this.db = this.client.db(env.MONGODB_DATABASE);
+      console.log(`📚 Using database: ${env.MONGODB_DATABASE}`);
+
+      return this.db;
+    } catch (error) {
+      console.error("❌ Failed to connect to MongoDB:", error);
+      throw error;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    if (this.client) {
+      await this.client.close();
+      this.client = null;
+      this.db = null;
+      console.log("🔌 Disconnected from MongoDB");
+    }
+  }
+
+  getDb(): Db {
+    if (!this.db) {
+      throw new Error("Database not connected. Call connect() first.");
+    }
+    return this.db;
+  }
+
+  isConnected(): boolean {
+    return this.db !== null;
+  }
+}
+
+// Export a singleton instance
+export const database = new DatabaseConnection();
+
+// Helper function to get database instance
+export const getDatabase = async (): Promise<Db> => {
+  return await database.connect();
+};
+```
+
+## Required Environment Variables
+
+Add these to `src/env.ts`:
+
+```typescript
+MONGODB_HOST: z.string().default("localhost"),
+MONGODB_PORT: z.coerce.number().default(27017),
+MONGODB_USER: z.string().optional(),
+MONGODB_PASSWORD: z.string().optional(),
+MONGODB_DATABASE: z.string().default("your-database-name"),
+```
