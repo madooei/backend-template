@@ -9,7 +9,7 @@
 ## API Endpoints Quick Reference
 
 | Method | Path       | Description                   | Auth Required |
-|--------|------------|-------------------------------|:-------------:|
+| ------ | ---------- | ----------------------------- | :-----------: |
 | GET    | /          | Root endpoint (hello)         |      No       |
 | GET    | /health    | Health check                  |      No       |
 | GET    | /notes     | List notes (with filters)     |      Yes      |
@@ -34,7 +34,7 @@
 - **GET /health**  
   Returns API health status.  
   **Auth:** Not required  
-  **Response:**  
+  **Response:**
   ```json
   { "status": "ok" }
   ```
@@ -52,23 +52,27 @@
 
 - **POST /notes**  
   Create a new note.  
-  **Body:**  
+  **Body:**
+
   ```json
   { "content": "Note content" }
   ```
+
   **Response:** Created note object
 
 - **PUT /notes/:id**  
   Update an existing note.  
-  **Body:**  
+  **Body:**
+
   ```json
   { "content": "Updated content" }
   ```
+
   **Response:** Updated note object
 
 - **DELETE /notes/:id**  
   Delete a note by ID.  
-  **Response:**  
+  **Response:**
   ```json
   { "message": "Note deleted successfully" }
   ```
@@ -89,8 +93,8 @@ All endpoints except `/` and `/health` require a Bearer token:
 Authorization: Bearer <your-token>
 ```
 
-- **Roles:**  
-  - `admin`: Full access  
+- **Roles:**
+  - `admin`: Full access
   - `user`: Access to own notes
 
 ---
@@ -125,7 +129,9 @@ Authorization: Bearer <your-token>
 
 ```json
 {
-  "data": [ /* array of notes */ ],
+  "data": [
+    /* array of notes */
+  ],
   "total": 25,
   "page": 1,
   "limit": 10,
@@ -154,22 +160,24 @@ Common status codes: 400, 401, 403, 404, 500
 
 - **Endpoint:** `GET /events`
 - **Auth:** Required
-- **Event types:**  
+- **Event types:**
   - `notes:created`
   - `notes:updated`
   - `notes:deleted`
   - Heartbeat (`: heartbeat`)
 
 **Example event:**
+
 ```
 event: notes:created
 data: { ...note event payload... }
 ```
 
 **Client Example (JS):**
+
 ```js
-const es = new EventSource('/events', { withCredentials: true });
-es.addEventListener('notes:created', e => {
+const es = new EventSource("/events", { withCredentials: true });
+es.addEventListener("notes:created", (e) => {
   const data = JSON.parse(e.data);
   // handle new note
 });

@@ -24,21 +24,18 @@ flowchart TD
 Located in `docs/memory-bank/`:
 
 1. `01-project-brief.md`
-
    - Foundation document that shapes all other files
    - Created at project start if it doesn't exist
    - Defines core requirements and goals
    - Source of truth for project scope
 
 2. `02-product-context.md`
-
    - Why this project exists
    - Problems it solves
    - How it should work
    - User experience goals
 
 3. `03-system-patterns.md`
-
    - System architecture and 6-layer pattern
    - Key technical decisions and implementation patterns
    - Design patterns in use, testing strategies
@@ -46,13 +43,11 @@ Located in `docs/memory-bank/`:
    - Critical implementation paths and development workflows
 
 4. `04-tech-context.md`
-
    - Technologies used and development setup
    - Technical constraints and dependencies
    - Tool usage patterns and build processes
 
 5. `05-active-context.md`
-
    - Current work focus and recent changes
    - Next steps and active decisions
    - Important patterns and preferences

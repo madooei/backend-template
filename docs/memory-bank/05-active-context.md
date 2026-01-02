@@ -117,7 +117,6 @@ private async createIndexes(collection: Collection<MongoNoteDocument>): Promise<
    **Objective**: Provide diverse learning examples demonstrating different patterns and relationships
 
    **Implementation Plan**:
-
    - **User Entity**: User management with profile data (teaches user modeling and authentication concepts)
    - **Product Entity**: E-commerce style entity with categories (teaches business domain modeling)
    - **Order Entity**: Complex entity with relationships (teaches entity relationships and foreign keys)
