@@ -1,5 +1,4 @@
-version: "3.8"
-
+name: backend-template-service
 services:
   app:
     container_name: backend-template-app # Rename as needed

@@ -7,39 +7,10 @@ This directory contains all the necessary files to build and run your applicatio
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) installed on your machine.
-- Copy or create the following environment files in this `docker` directory:
+- Copy `.env.example` and rename it in this `docker` directory to:
   - `.env` (for development)
   - `.env.production` (for production)
-
-**Example `.env` file:**
-
-```env
-NODE_ENV=development
-PORT=3000
-
-# Postgres
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DATABASE=postgres-db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-# 👇 Specifies whether to use secure connection or not (disable since we are connecting through the docker network)
-POSTGRES_SSLMODE=disable
-
-# MongoDB
-MONGODB_HOST=localhost
-MONGODB_PORT=27017
-MONGODB_DATABASE=mern-db
-MONGODB_USER=admin
-MONGODB_PASSWORD=admin
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=redispassword
-```
-
-Make sure to update the values as needed for your setup.
+- Make sure to update the values as needed for your setup.
 
 ## Development
 
@@ -87,7 +58,7 @@ docker compose -f docker/docker-compose.prod.yml down
 
 ## Notes
 
-- **Environment Files:** Both `.env` and `.env.production` must be present in the `docker` directory before running the respective compose files.
+- **Environment Files:** The `.env` (for development) and `.env.production` (for production) must be present in the `docker` directory before running the respective compose files.
 - **Database Access:** In development, you can connect to the databases using the credentials and ports defined in your `.env` file.
 - **Production Databases:** The production compose file does **not** start database containers. For production, use managed database services or external databases.
 
