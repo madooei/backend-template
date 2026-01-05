@@ -42,7 +42,7 @@ pnpm add -D mongodb-memory-server
 
 #### Step 3: Add Environment Variables
 
-Update `src/env.ts`:
+Update `src/env.ts` (add to schema and mappedEnv, using the `getEnv()` helper):
 
 ```typescript
 const envSchema = z.object({
@@ -55,24 +55,24 @@ const envSchema = z.object({
 
 const mappedEnv = {
   // ... existing mappings ...
-  MONGODB_URI: process.env.MONGODB_URI,
-  MONGODB_DATABASE: process.env.MONGODB_DATABASE,
+  MONGODB_URI: getEnv("MONGODB_URI"),
+  MONGODB_DATABASE: getEnv("MONGODB_DATABASE"),
 };
 ```
 
-Update `.env.example`:
+Update `.env.example` (using the `BT_` prefix):
 
 ```bash
 # MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017
-MONGODB_DATABASE=my-app-db
+BT_MONGODB_URI=mongodb://localhost:27017
+BT_MONGODB_DATABASE=my-app-db
 ```
 
 Update `.env`:
 
 ```bash
-MONGODB_URI=mongodb://localhost:27017
-MONGODB_DATABASE=my-app-db
+BT_MONGODB_URI=mongodb://localhost:27017
+BT_MONGODB_DATABASE=my-app-db
 ```
 
 ### Phase 3: Connection Setup

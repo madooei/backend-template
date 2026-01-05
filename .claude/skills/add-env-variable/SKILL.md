@@ -40,23 +40,25 @@ const envSchema = z.object({
 
 ### Step 2: Add to Mapping Object
 
-Add the variable to `mappedEnv`:
+Add the variable to `mappedEnv` using the `getEnv()` helper (which reads prefixed variables):
 
 ```typescript
 const mappedEnv = {
   // ... existing mappings ...
-  NEW_VARIABLE: process.env.NEW_VARIABLE,
+  NEW_VARIABLE: getEnv("NEW_VARIABLE"),
 };
 ```
 
 ### Step 3: Document in `.env.example`
 
-Add the variable with a descriptive comment:
+Add the variable with a descriptive comment, using the prefix (default: `BT_`):
 
 ```bash
 # Description of what this variable is for
-NEW_VARIABLE=example-value
+BT_NEW_VARIABLE=example-value
 ```
+
+> **Note**: The prefix is defined in `src/env.ts` as `const PREFIX = "BT"`. Change this when creating a new service from the template.
 
 ### Step 4: Add Tests in `tests/env.test.ts`
 
@@ -87,6 +89,8 @@ it("rejects missing NEW_VARIABLE", () => {
 
 ## Common Patterns
 
+All examples use the `getEnv()` helper and `BT_` prefix:
+
 ### Required String
 
 ```typescript
@@ -94,10 +98,10 @@ it("rejects missing NEW_VARIABLE", () => {
 MY_API_KEY: z.string(),
 
 // Mapping
-MY_API_KEY: process.env.MY_API_KEY,
+MY_API_KEY: getEnv("MY_API_KEY"),
 
 // .env.example
-MY_API_KEY=your-api-key-here
+BT_MY_API_KEY=your-api-key-here
 ```
 
 ### Optional String
@@ -107,11 +111,11 @@ MY_API_KEY=your-api-key-here
 OPTIONAL_FEATURE: z.string().optional(),
 
 // Mapping
-OPTIONAL_FEATURE: process.env.OPTIONAL_FEATURE,
+OPTIONAL_FEATURE: getEnv("OPTIONAL_FEATURE"),
 
 // .env.example
 # Optional: Enable feature X
-# OPTIONAL_FEATURE=enabled
+# BT_OPTIONAL_FEATURE=enabled
 ```
 
 ### String with Default
@@ -121,10 +125,10 @@ OPTIONAL_FEATURE: process.env.OPTIONAL_FEATURE,
 LOG_LEVEL: z.string().default("info"),
 
 // Mapping
-LOG_LEVEL: process.env.LOG_LEVEL,
+LOG_LEVEL: getEnv("LOG_LEVEL"),
 
 // .env.example
-LOG_LEVEL=info
+BT_LOG_LEVEL=info
 ```
 
 ### Number with Coercion
@@ -134,10 +138,10 @@ LOG_LEVEL=info
 RATE_LIMIT: z.coerce.number().default(100),
 
 // Mapping
-RATE_LIMIT: process.env.RATE_LIMIT,
+RATE_LIMIT: getEnv("RATE_LIMIT"),
 
 // .env.example
-RATE_LIMIT=100
+BT_RATE_LIMIT=100
 ```
 
 ### URL Validation
@@ -147,11 +151,11 @@ RATE_LIMIT=100
 WEBHOOK_URL: z.string().url().optional(),
 
 // Mapping
-WEBHOOK_URL: process.env.WEBHOOK_URL,
+WEBHOOK_URL: getEnv("WEBHOOK_URL"),
 
 // .env.example
 # Webhook endpoint for notifications
-WEBHOOK_URL=https://example.com/webhook
+BT_WEBHOOK_URL=https://example.com/webhook
 ```
 
 ### Enum Values
@@ -161,10 +165,10 @@ WEBHOOK_URL=https://example.com/webhook
 NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
 // Mapping
-NODE_ENV: process.env.NODE_ENV,
+NODE_ENV: getEnv("NODE_ENV"),
 
 // .env.example
-NODE_ENV=development
+BT_NODE_ENV=development
 ```
 
 ### Boolean (as string)
@@ -174,10 +178,10 @@ NODE_ENV=development
 ENABLE_FEATURE: z.string().transform(v => v === "true").default("false"),
 
 // Mapping
-ENABLE_FEATURE: process.env.ENABLE_FEATURE,
+ENABLE_FEATURE: getEnv("ENABLE_FEATURE"),
 
 // .env.example
-ENABLE_FEATURE=false
+BT_ENABLE_FEATURE=false
 ```
 
 ## Usage in Code
@@ -210,9 +214,9 @@ const envSchema = z.object({
 
 const mappedEnv = {
   // ... existing ...
-  EMAIL_API_KEY: process.env.EMAIL_API_KEY,
-  EMAIL_FROM_ADDRESS: process.env.EMAIL_FROM_ADDRESS,
-  EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
+  EMAIL_API_KEY: getEnv("EMAIL_API_KEY"),
+  EMAIL_FROM_ADDRESS: getEnv("EMAIL_FROM_ADDRESS"),
+  EMAIL_PROVIDER: getEnv("EMAIL_PROVIDER"),
 };
 ```
 
@@ -220,9 +224,9 @@ const mappedEnv = {
 
 ```bash
 # Email service configuration
-EMAIL_API_KEY=your-email-api-key
-EMAIL_FROM_ADDRESS=noreply@example.com
-EMAIL_PROVIDER=sendgrid
+BT_EMAIL_API_KEY=your-email-api-key
+BT_EMAIL_FROM_ADDRESS=noreply@example.com
+BT_EMAIL_PROVIDER=sendgrid
 ```
 
 ### 3. Update `tests/env.test.ts`

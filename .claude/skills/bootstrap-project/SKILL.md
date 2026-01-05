@@ -1,20 +1,20 @@
 ---
 name: bootstrap-project
-description: Initialize a new backend project following template patterns. Use when starting a new service from scratch. Triggers on "new project", "bootstrap", "start from scratch", "initialize project".
+description: Initialize a new backend project with TypeScript, ESLint, Prettier, and Hono. Use when starting a new service from scratch. Triggers on "new project", "bootstrap", "start from scratch", "initialize project".
 ---
 
 # Bootstrap Project
 
-Initializes a new backend project following the 6-layer architecture patterns.
+Initializes a minimal TypeScript backend project with Hono.js, including code quality tooling (ESLint, Prettier) and a "Hello World" app.
 
 ## Quick Reference
 
-**Use when**: Creating a new backend service from scratch (not from the template)
-**Result**: A fully structured project ready for adding resources
+**Use when**: Creating a new backend service from scratch
+**Result**: A minimal project ready for adding layers via other skills
 
 ## Prerequisites
 
-- Node.js 18+ installed
+- Node.js 20+ installed
 - pnpm installed (`npm install -g pnpm`)
 - Git installed
 
@@ -40,13 +40,20 @@ pnpm init
 
 ```bash
 # Core dependencies
-pnpm add hono zod uuid
+pnpm add hono @hono/node-server zod dotenv
 
-# Development dependencies
-pnpm add -D typescript tsx tsup vitest @types/node @types/uuid
-pnpm add -D eslint prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser
-pnpm add -D eslint-config-prettier eslint-plugin-prettier
+# TypeScript and build tools
+pnpm add -D typescript tsx tsup @types/node
+
+# Testing
+pnpm add -D vitest @vitest/coverage-v8
+
+# Linting and formatting
+pnpm add -D eslint typescript-eslint @eslint/js globals jiti
+pnpm add -D prettier eslint-config-prettier eslint-plugin-prettier
 ```
+
+### Phase 2: Configuration Files
 
 #### Step 4: Create TypeScript Config
 
@@ -55,21 +62,38 @@ Create `tsconfig.json`:
 ```json
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "strict": true,
+    "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "strict": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "types": ["node"],
+    "rootDir": ".",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
+  "include": ["src/**/*", "scripts/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "coverage"]
+}
+```
+
+Create `tsconfig.build.json`:
+
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "coverage", "tests", "scripts"]
 }
 ```
 
@@ -81,14 +105,15 @@ Create `tsup.config.ts`:
 import { defineConfig } from "tsup";
 
 export default defineConfig({
+  target: "node20",
   entry: ["src/server.ts"],
-  format: ["esm"],
-  dts: true,
-  clean: true,
-  sourcemap: true,
-  minify: false,
-  target: "node18",
   outDir: "dist",
+  format: ["esm"],
+  sourcemap: true,
+  clean: true,
+  dts: true,
+  splitting: true,
+  treeshake: true,
   esbuildOptions(options) {
     options.alias = {
       "@": "./src",
@@ -102,18 +127,25 @@ export default defineConfig({
 Create `vitest.config.ts`:
 
 ```typescript
-import { defineConfig } from "vitest/config";
 import path from "path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
     include: ["tests/**/*.test.ts"],
-    globals: false,
-    environment: "node",
     coverage: {
       provider: "v8",
-      reporter: ["text", "html"],
-      exclude: ["node_modules/", "tests/", "dist/"],
+      reporter: ["text", "json", "html"],
+      all: true,
+      include: ["src/**/*.ts"],
+      exclude: [
+        "**/*.test.ts",
+        "**/coverage/**",
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/scripts/**",
+        "**/src/server.ts",
+      ],
     },
   },
   resolve: {
@@ -124,10 +156,72 @@ export default defineConfig({
 });
 ```
 
-#### Step 7: Update package.json Scripts
+#### Step 7: Create ESLint Config
+
+Create `eslint.config.ts`:
+
+```typescript
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+
+export default tseslint.config(
+  { ignores: ["dist", "tests"] },
+  {
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommended,
+      eslintConfigPrettier,
+    ],
+    files: ["**/*.ts"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      prettier: eslintPluginPrettier,
+    },
+    rules: {},
+  },
+);
+```
+
+#### Step 8: Create Prettier Config
+
+Create `prettier.config.json`:
 
 ```json
 {
+  "semi": true,
+  "trailingComma": "all",
+  "singleQuote": false,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "endOfLine": "auto"
+}
+```
+
+Create `.prettierignore`:
+
+```plaintext
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+
+pnpm-lock.yaml
+dist
+```
+
+#### Step 9: Update package.json
+
+Add the following to `package.json`:
+
+```json
+{
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsup",
@@ -135,198 +229,99 @@ export default defineConfig({
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint src tests --ext .ts",
-    "lint:fix": "eslint src tests --ext .ts --fix",
-    "format:fix": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "type-check": "tsc --noEmit --project tsconfig.build.json",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "validate": "pnpm type-check && pnpm lint:fix && pnpm format:fix && pnpm test",
     "clean": "rm -rf dist coverage"
-  },
-  "type": "module"
+  }
 }
 ```
 
-### Phase 2: Directory Structure
+### Phase 3: Directory Structure
 
-#### Step 8: Create Directory Structure
+#### Step 10: Create Directory Structure
 
 ```bash
-mkdir -p src/{controllers,errors,events,middlewares,repositories/mockdb,routes,schemas,services,config}
+mkdir -p src/{controllers,middlewares,repositories/mockdb,routes,schemas,services}
 mkdir -p tests/{controllers,middlewares,repositories,routes,schemas,services}
 mkdir -p scripts
 ```
 
-### Phase 3: Core Infrastructure Files
+### Phase 4: Core Files
 
-#### Step 9: Create Environment Config
+#### Step 11: Create Environment Config
 
 Create `src/env.ts`:
 
 ```typescript
+import dotenv from "dotenv";
 import { z } from "zod";
 
-const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
-  PORT: z.coerce.number().default(3000),
-  AUTH_SERVICE_URL: z.string().url().optional(),
-});
+dotenv.config();
 
-const mappedEnv = {
-  NODE_ENV: process.env.NODE_ENV,
-  PORT: process.env.PORT,
-  AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL,
+/**
+ * Environment variable prefix for this service.
+ * This prevents conflicts when running multiple services in the same environment.
+ * Change this prefix when creating a new service from this template.
+ */
+const PREFIX = "BT";
+
+/**
+ * Helper function to get prefixed environment variable.
+ * Falls back to unprefixed variable for backwards compatibility during migration.
+ */
+const getEnv = (name: string): string | undefined => {
+  return process.env[`${PREFIX}_${name}`] ?? process.env[name];
 };
 
-export const env = envSchema.parse(mappedEnv);
-export { envSchema };
+const envSchema = z.object({
+  NODE_ENV: z.string().default("development"),
+  PORT: z.coerce.number().default(3000),
+});
+
+// Map prefixed environment variables to internal names
+const mappedEnv = {
+  NODE_ENV: getEnv("NODE_ENV"),
+  PORT: getEnv("PORT"),
+};
+
+const _env = envSchema.safeParse(mappedEnv);
+
+if (!_env.success) {
+  console.error("Invalid environment variables:", _env.error.format());
+  process.exit(1);
+}
+
+export const env = _env.data;
 ```
 
 Create `.env.example`:
 
 ```bash
-NODE_ENV=development
-PORT=3000
-AUTH_SERVICE_URL=http://localhost:3333
+# Environment variable prefix: BT (Backend Template)
+# Change this prefix in src/env.ts when creating a new service
+
+BT_NODE_ENV=development
+BT_PORT=3000
 ```
 
 Create `.env`:
 
 ```bash
-NODE_ENV=development
-PORT=3000
-AUTH_SERVICE_URL=http://localhost:3333
+BT_NODE_ENV=development
+BT_PORT=3000
 ```
 
-#### Step 10: Create Error Infrastructure
-
-Create `src/errors.ts`:
-
-```typescript
-import type { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "@/schemas/app-env.schema";
-
-type ErrorCode = number;
-
-interface BaseErrorOptions {
-  cause?: unknown;
-  errorCode?: ErrorCode;
-}
-
-export class BaseError extends Error {
-  public readonly cause?: unknown;
-  public readonly errorCode?: ErrorCode;
-
-  constructor(message: string, options?: BaseErrorOptions) {
-    super(message);
-    this.name = this.constructor.name;
-    this.cause = options?.cause;
-    this.errorCode = options?.errorCode;
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-
-  public toJSON(): { error: string; code?: ErrorCode; cause?: string } {
-    const json: { error: string; code?: ErrorCode; cause?: string } = {
-      error: this.message,
-    };
-    if (this.errorCode !== undefined) {
-      json.code = this.errorCode;
-    }
-    if (this.cause instanceof Error && this.cause.message) {
-      json.cause = this.cause.message;
-    }
-    return json;
-  }
-}
-
-export class BadRequestError extends BaseError {
-  constructor(
-    message: string = "Bad Request",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 400 });
-  }
-}
-
-export class UnauthenticatedError extends BaseError {
-  constructor(
-    message: string = "Authentication required",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 401 });
-  }
-}
-
-export class UnauthorizedError extends BaseError {
-  constructor(
-    message: string = "Access denied",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 403 });
-  }
-}
-
-export class NotFoundError extends BaseError {
-  constructor(
-    message: string = "Resource not found",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 404 });
-  }
-}
-
-export class InternalServerError extends BaseError {
-  constructor(
-    message: string = "Internal server error",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 500 });
-  }
-}
-
-export class ServiceUnavailableError extends BaseError {
-  constructor(
-    message: string = "Service temporarily unavailable",
-    options?: Omit<BaseErrorOptions, "errorCode">,
-  ) {
-    super(message, { ...options, errorCode: 503 });
-  }
-}
-
-function createErrorResponse(c: Context<AppEnv>, error: BaseError) {
-  const statusCode = error.errorCode || 500;
-  return c.json(error.toJSON(), statusCode as any);
-}
-
-export const globalErrorHandler = (err: Error, c: Context<AppEnv>) => {
-  console.error(err);
-
-  if (err instanceof BaseError) {
-    return createErrorResponse(c, err);
-  } else if (err instanceof HTTPException) {
-    return c.json({ error: err.message }, err.status);
-  } else {
-    const internalError = new InternalServerError(
-      "An unexpected error occurred",
-      { cause: err },
-    );
-    return createErrorResponse(c, internalError);
-  }
-};
-```
-
-#### Step 11: Create Schema Infrastructure
+#### Step 12: Create App Context Schema
 
 Create `src/schemas/app-env.schema.ts`:
 
 ```typescript
-import type { AuthenticatedUserContextType } from "./user.schemas";
-
 export interface AppEnv {
   Variables: {
-    user: AuthenticatedUserContextType;
     validatedBody: unknown;
     validatedQuery: unknown;
     validatedParams: unknown;
@@ -334,362 +329,168 @@ export interface AppEnv {
 }
 ```
 
-Create `src/schemas/user.schemas.ts`:
-
-```typescript
-import { z } from "zod";
-
-export const userIdSchema = z.string();
-export type UserIdType = z.infer<typeof userIdSchema>;
-
-export const globalRoleSchema = z.enum(["admin", "user"]);
-export type GlobalRoleType = z.infer<typeof globalRoleSchema>;
-
-export const authenticatedUserContextSchema = z.object({
-  userId: userIdSchema,
-  globalRole: globalRoleSchema,
-});
-export type AuthenticatedUserContextType = z.infer<
-  typeof authenticatedUserContextSchema
->;
-```
-
-Create `src/schemas/shared.schema.ts`:
-
-```typescript
-import { z } from "zod";
-
-export const DEFAULT_PAGE = 1;
-export const DEFAULT_LIMIT = 10;
-
-export const queryParamsSchema = z.object({
-  search: z.string().optional(),
-  sortBy: z.string().optional(),
-  sortOrder: z.enum(["asc", "desc"]).optional(),
-  page: z.coerce.number().int().positive().optional(),
-  limit: z.coerce.number().int().positive().optional(),
-});
-export type QueryParamsType = z.infer<typeof queryParamsSchema>;
-
-export const paginatedResultSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    data: z.array(dataSchema),
-    total: z.number(),
-    page: z.number(),
-    limit: z.number(),
-    totalPages: z.number(),
-  });
-export type PaginatedResultType<T> = {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-};
-
-export const entityIdParamSchema = (paramName: string = "id") =>
-  z.object({
-    [paramName]: z.string(),
-  });
-export type EntityIdParamType = { id: string };
-```
-
-#### Step 12: Create Event Infrastructure
-
-Create `src/events/event-emitter.ts`:
-
-```typescript
-import { EventEmitter } from "events";
-import type { ServiceEventType } from "@/schemas/event.schema";
-
-class AppEventEmitter extends EventEmitter {
-  emitServiceEvent(serviceName: string, event: ServiceEventType) {
-    this.emit(`${serviceName}:${event.action}`, event);
-  }
-}
-
-export const appEvents = new AppEventEmitter();
-```
-
-Create `src/events/base.service.ts`:
-
-```typescript
-import { appEvents } from "./event-emitter";
-import type { ServiceEventType } from "@/schemas/event.schema";
-import { v4 as uuidv4 } from "uuid";
-
-export abstract class BaseService {
-  constructor(protected serviceName: string) {}
-
-  protected emitEvent<T>(
-    action: ServiceEventType["action"],
-    data: T,
-    options?: {
-      id?: string;
-      user?: { userId: string; [key: string]: unknown };
-    },
-  ) {
-    const eventUser = options?.user
-      ? {
-          id: options.user.userId,
-          ...options.user,
-        }
-      : undefined;
-
-    appEvents.emitServiceEvent(this.serviceName, {
-      id: options?.id || uuidv4(),
-      action,
-      data,
-      user: eventUser,
-      timestamp: new Date(),
-      resourceType: this.serviceName,
-    });
-  }
-}
-```
-
-Create `src/schemas/event.schema.ts`:
-
-```typescript
-import { z } from "zod";
-
-export const serviceEventSchema = z.object({
-  id: z.string(),
-  action: z.enum(["created", "updated", "deleted"]),
-  data: z.unknown(),
-  user: z
-    .object({
-      id: z.string(),
-    })
-    .passthrough()
-    .optional(),
-  timestamp: z.date(),
-  resourceType: z.string(),
-});
-
-export type ServiceEventType = z.infer<typeof serviceEventSchema>;
-```
-
-#### Step 13: Create Middleware Infrastructure
-
-Create `src/middlewares/validation.middleware.ts`:
-
-```typescript
-import type { MiddlewareHandler } from "hono";
-import { createMiddleware } from "hono/factory";
-import type { ZodTypeAny } from "zod";
-import type { AppEnv } from "@/schemas/app-env.schema";
-import { BadRequestError, InternalServerError } from "@/errors";
-
-export type ValidationDataSource = "body" | "query" | "params";
-
-interface ValidationOptions {
-  schema: ZodTypeAny;
-  source: ValidationDataSource;
-  varKey: string;
-}
-
-export const validate = (
-  options: ValidationOptions,
-): MiddlewareHandler<AppEnv> => {
-  const { schema, source, varKey } = options;
-
-  return createMiddleware<AppEnv>(async (c, next) => {
-    let dataToValidate: unknown;
-
-    try {
-      switch (source) {
-        case "body":
-          dataToValidate = await c.req.json();
-          break;
-        case "query":
-          dataToValidate = c.req.query();
-          break;
-        case "params":
-          dataToValidate = c.req.param();
-          break;
-        default:
-          throw new InternalServerError();
-      }
-    } catch (error) {
-      if (error instanceof InternalServerError) throw error;
-      throw new BadRequestError(`Invalid request ${source}.`);
-    }
-
-    const result = schema.safeParse(dataToValidate);
-
-    if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      const fieldErrorMessages = Object.entries(fieldErrors)
-        .map(([field, errors]) => `${field}: ${errors?.join(", ")}`)
-        .join("; ");
-      throw new BadRequestError(
-        `Validation failed for ${source}. ${fieldErrorMessages}`,
-        { cause: result.error.flatten() },
-      );
-    }
-
-    c.set(varKey as keyof AppEnv["Variables"], result.data);
-    await next();
-  });
-};
-```
-
-#### Step 14: Create App and Server
+#### Step 13: Create App
 
 Create `src/app.ts`:
 
 ```typescript
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import type { AppEnv } from "@/schemas/app-env.schema";
-import { globalErrorHandler } from "@/errors";
 
-const app = new Hono<AppEnv>();
+export const app = new Hono<AppEnv>();
 
-// Global middleware
-app.use("*", cors());
-
-// Health check
-app.get("/health", (c) => c.json({ status: "ok" }));
-
-// Error handler
-app.onError(globalErrorHandler);
-
-export { app };
+app.get("/", (c) => c.text("Hello Hono!"));
 ```
+
+#### Step 14: Create Server
 
 Create `src/server.ts`:
 
 ```typescript
 import { serve } from "@hono/node-server";
-import { app } from "./app";
-import { env } from "./env";
+import { app } from "@/app";
+import { env } from "@/env";
 
-const port = env.PORT;
-
-console.log(`Server starting on port ${port}...`);
-
-serve({
-  fetch: app.fetch,
-  port,
-});
-
-console.log(`Server running at http://localhost:${port}`);
-```
-
-Install the server adapter:
-
-```bash
-pnpm add @hono/node-server
-```
-
-### Phase 4: Utility Services
-
-#### Step 15: Create Authorization Service
-
-Create `src/services/authorization.service.ts`:
-
-```typescript
-import type { AuthenticatedUserContextType } from "@/schemas/user.schemas";
-
-export class AuthorizationService {
-  isAdmin(user: AuthenticatedUserContextType): boolean {
-    return user.globalRole === "admin";
-  }
-}
+serve(
+  {
+    fetch: app.fetch,
+    port: env.PORT,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+  },
+);
 ```
 
 ### Phase 5: Git Configuration
 
-#### Step 16: Create .gitignore
+#### Step 15: Create .gitignore
 
 Create `.gitignore`:
 
-```
+```plaintext
+# dev
+.yarn/
+!.yarn/releases
+.vscode/*
+!.vscode/launch.json
+!.vscode/*.code-snippets
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# deps
 node_modules/
-dist/
-coverage/
+.pnpm-store/
+
+# env
 .env
+.env.production
+
+# logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# misc
 .DS_Store
+
+# Build artifacts
+dist
+
+# Test Coverage
+coverage
 ```
 
 ### Phase 6: Verification
 
-#### Step 17: Verify Setup
+#### Step 16: Verify Setup
 
 ```bash
+# Install dependencies (if not already done)
+pnpm install
+
 # Type check
 pnpm type-check
+
+# Lint
+pnpm lint
+
+# Format
+pnpm format:fix
 
 # Start dev server
 pnpm dev
 
-# In another terminal, test health endpoint
-curl http://localhost:3000/health
+# In another terminal, test the endpoint
+curl http://localhost:3000
+# Should return: Hello Hono!
 ```
-
-## Next Steps
-
-After bootstrapping, you can add your first resource:
-
-1. Use `create-resource` skill to create a complete resource
-2. Use `setup-mongodb` skill if you need MongoDB
-3. Add authentication middleware using `create-middleware` skill
 
 ## Files Created Summary
 
-```
+```plaintext
 my-backend-service/
 ├── src/
-│   ├── app.ts
-│   ├── server.ts
-│   ├── env.ts
-│   ├── errors.ts
-│   ├── config/
-│   ├── controllers/
-│   ├── events/
-│   │   ├── base.service.ts
-│   │   └── event-emitter.ts
-│   ├── middlewares/
-│   │   └── validation.middleware.ts
+│   ├── app.ts                    # Hono app with Hello World route
+│   ├── server.ts                 # Server startup
+│   ├── env.ts                    # Environment configuration
+│   ├── controllers/              # (empty)
+│   ├── middlewares/              # (empty)
 │   ├── repositories/
-│   │   └── mockdb/
-│   ├── routes/
+│   │   └── mockdb/               # (empty)
+│   ├── routes/                   # (empty)
 │   ├── schemas/
-│   │   ├── app-env.schema.ts
-│   │   ├── event.schema.ts
-│   │   ├── shared.schema.ts
-│   │   └── user.schemas.ts
-│   └── services/
-│       └── authorization.service.ts
+│   │   └── app-env.schema.ts     # AppEnv interface
+│   └── services/                 # (empty)
 ├── tests/
-│   ├── controllers/
-│   ├── middlewares/
-│   ├── repositories/
-│   ├── routes/
-│   ├── schemas/
-│   └── services/
-├── scripts/
+│   ├── controllers/              # (empty)
+│   ├── middlewares/              # (empty)
+│   ├── repositories/             # (empty)
+│   ├── routes/                   # (empty)
+│   ├── schemas/                  # (empty)
+│   └── services/                 # (empty)
+├── scripts/                      # (empty)
 ├── .env
 ├── .env.example
 ├── .gitignore
+├── .prettierignore
+├── eslint.config.ts
 ├── package.json
+├── prettier.config.json
 ├── tsconfig.json
+├── tsconfig.build.json
 ├── tsup.config.ts
 └── vitest.config.ts
 ```
 
+## Next Steps
+
+After bootstrapping, use these skills to build out your application:
+
+1. **`setup-errors`** - Add error handling infrastructure (BaseError, HTTP errors, global handler)
+2. **`setup-events`** - Add event system for real-time updates (EventEmitter, BaseService)
+3. **`setup-testing`** - Enhanced test infrastructure (fixtures, helpers)
+4. **`setup-docker`** - Add Docker support for development and production
+5. **`setup-mongodb`** - Add MongoDB database support
+6. **`create-resource`** - Create your first CRUD resource (schema, repository, service, controller, routes)
+
 ## What NOT to Do
 
 - Do NOT skip the TypeScript configuration
-- Do NOT use relative imports (use `@/` path alias)
+- Do NOT use relative imports (always use `@/` path alias)
 - Do NOT commit `.env` file (only `.env.example`)
-- Do NOT skip the error infrastructure
+- Do NOT add complex infrastructure here (use dedicated setup skills)
 
 ## See Also
 
-- `create-resource` - Create your first resource
-- `setup-mongodb` - Add MongoDB support
-- `create-middleware` - Add authentication middleware
+- `setup-errors` - Error handling infrastructure
+- `setup-events` - Event-driven architecture
+- `setup-testing` - Test infrastructure
+- `setup-docker` - Docker configuration
+- `setup-mongodb` - MongoDB setup
+- `create-resource` - Create a complete CRUD resource
