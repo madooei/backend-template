@@ -11,22 +11,22 @@ services:
     env_file:
       - .env # relative to this file
     ports:
-      - "${PORT}:${PORT}" # Map port host:container
+      - "${BT_PORT}:${BT_PORT}" # Map port host:container
     environment:
-      - NODE_ENV=development
-      - PORT=${PORT}
-      - POSTGRES_HOST=postgres_db # Use service name instead of localhost
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
-      - MONGODB_HOST=mongo_db # Use service name instead of localhost
-      - MONGODB_PORT=${MONGODB_PORT}
-      - MONGODB_DATABASE=${MONGODB_DATABASE}
-      - MONGODB_USER=${MONGODB_USER}
-      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
-      - REDIS_HOST=redis_cache # Use service name instead of localhost
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - BT_NODE_ENV=development
+      - BT_PORT=${BT_PORT}
+      - BT_POSTGRES_HOST=postgres_db # Use service name instead of localhost
+      - BT_POSTGRES_USER=${BT_POSTGRES_USER}
+      - BT_POSTGRES_PASSWORD=${BT_POSTGRES_PASSWORD}
+      - BT_POSTGRES_DATABASE=${BT_POSTGRES_DATABASE}
+      - BT_MONGODB_HOST=mongo_db # Use service name instead of localhost
+      - BT_MONGODB_PORT=${BT_MONGODB_PORT}
+      - BT_MONGODB_DATABASE=${BT_MONGODB_DATABASE}
+      - BT_MONGODB_USER=${BT_MONGODB_USER}
+      - BT_MONGODB_PASSWORD=${BT_MONGODB_PASSWORD}
+      - BT_REDIS_HOST=redis_cache # Use service name instead of localhost
+      - BT_REDIS_PORT=${BT_REDIS_PORT}
+      - BT_REDIS_PASSWORD=${BT_REDIS_PASSWORD}
     depends_on:
       mongo_db:
         condition: service_healthy
@@ -45,8 +45,11 @@ services:
     env_file:
       - .env
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    user: "${POSTGRES_USER}"
+      - "${BT_POSTGRES_PORT}:${BT_POSTGRES_PORT}"
+    environment:
+      - POSTGRES_USER=${BT_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${BT_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${BT_POSTGRES_DATABASE}
     volumes:
       - pgdata:/var/lib/postgresql/data # Where Postgres stores its data by default
     healthcheck:
@@ -63,13 +66,13 @@ services:
     env_file:
       - .env
     ports:
-      - "${MONGODB_PORT}:${MONGODB_PORT}"
+      - "${BT_MONGODB_PORT}:${BT_MONGODB_PORT}"
     volumes:
       - mongodb_data:/data/db # Where MongoDB stores its data by default
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
-      - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${BT_MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${BT_MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${BT_MONGODB_DATABASE}
     healthcheck:
       test:
         [
@@ -77,9 +80,9 @@ services:
           "mongosh",
           "--authenticationDatabase=admin",
           "-u",
-          "${MONGODB_USER}",
+          "${BT_MONGODB_USER}",
           "-p",
-          "${MONGODB_PASSWORD}",
+          "${BT_MONGODB_PASSWORD}",
           "--eval",
           "db.runCommand('ping').ok",
           "--quiet",
@@ -96,15 +99,15 @@ services:
     env_file:
       - .env
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "${BT_REDIS_PORT}:${BT_REDIS_PORT}"
     volumes:
       - redis_data:/data # Where Redis stores its data by default
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${BT_REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 10s
       retries: 5
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--requirepass", "${BT_REDIS_PASSWORD}"]
     restart: unless-stopped
     networks:
       - app-network
