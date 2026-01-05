@@ -4,6 +4,21 @@ import { z } from "zod";
 // Load environment variables from .env file
 dotenv.config();
 
+/**
+ * Environment variable prefix for this service.
+ * This prevents conflicts when running multiple services in the same environment.
+ * Change this prefix when creating a new service from this template.
+ */
+const PREFIX = "BT";
+
+/**
+ * Helper function to get prefixed environment variable.
+ * Falls back to unprefixed variable for backwards compatibility during migration.
+ */
+const getEnv = (name: string): string | undefined => {
+  return process.env[`${PREFIX}_${name}`] ?? process.env[name];
+};
+
 // Define the schema to validate the environment variables
 const envSchema = z.object({
   NODE_ENV: z.string().default("development"),
@@ -18,16 +33,17 @@ const envSchema = z.object({
   MONGODB_DATABASE: z.string().default("backend-template"),
 });
 
-// Create an object to allow (potentially) mapping environment variables with different names
+// Map prefixed environment variables to internal names
+// The rest of the application uses these internal names (e.g., env.PORT, env.MONGODB_HOST)
 const mappedEnv = {
-  NODE_ENV: process.env.NODE_ENV,
-  PORT: process.env.PORT,
-  AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL,
-  MONGODB_HOST: process.env.MONGODB_HOST,
-  MONGODB_PORT: process.env.MONGODB_PORT,
-  MONGODB_USER: process.env.MONGODB_USER,
-  MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
-  MONGODB_DATABASE: process.env.MONGODB_DATABASE,
+  NODE_ENV: getEnv("NODE_ENV"),
+  PORT: getEnv("PORT"),
+  AUTH_SERVICE_URL: getEnv("AUTH_SERVICE_URL"),
+  MONGODB_HOST: getEnv("MONGODB_HOST"),
+  MONGODB_PORT: getEnv("MONGODB_PORT"),
+  MONGODB_USER: getEnv("MONGODB_USER"),
+  MONGODB_PASSWORD: getEnv("MONGODB_PASSWORD"),
+  MONGODB_DATABASE: getEnv("MONGODB_DATABASE"),
 };
 
 const _env = envSchema.safeParse(mappedEnv);
